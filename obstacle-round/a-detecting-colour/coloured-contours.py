@@ -17,7 +17,7 @@ picam2.start()
 
 #Define colour ranges
 lower_red = np.array([0, 120, 88])
-upper_red = np.array([19, 255, 255])
+upper_red = np.array([10, 255, 255])
 lower_green = np.array([52, 120, 78])
 upper_green = np.array([70, 255, 255])
 lower1_black = np.array([37, 65, 20])

@@ -21,7 +21,7 @@ def init():
     
     #Define colour ranges
     lower_red = np.array([0, 120, 88])
-    upper_red = np.array([19, 255, 255])
+    upper_red = np.array([10, 255, 255])
     lower_green = np.array([52, 120, 78])
     upper_green = np.array([70, 255, 255])
     lower1_black = np.array([37, 65, 20])
@@ -76,7 +76,7 @@ def process_frame():
 def get_obstacle_positions(contours, obs):
     obs = []
     min_area = 500  # minimum contour area to be obstacle in pixels
-    max_area = 30000
+    max_area = 50000
 
     for cnt in contours:
         if cv2.contourArea(cnt) > min_area and cv2.contourArea(cnt) < max_area:
