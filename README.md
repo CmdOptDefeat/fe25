@@ -35,14 +35,14 @@ See [this section](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Enginee
 
 
 # Repository Structure
-- [design-files](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/design-files) : Contains the Bill of Materials, 3D-printable design files and hardware. Pictures and description of the robot and components are included.
-- [initial-tests](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/initial-tests) : Intial tests on various sensors to ensure accurate data collection and basic object detection algorithm.
-- [hw](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/hw) : Contains schematic and PCB files for the peripherals interface board.
-- [sw](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/sw) : Contains PlatformIO project for the peripherals interface board.
-- [open-round](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/open-round) : It contains the program files for the open round over various iterations and hardware setups. The final open round program is found in `sw/peripherals-board/src/divers`
-- [repo-assets]() :
-- [obstacle-round](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/obstacle-round) : 
-- [test-data-recordings/open-round](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/test-data-recordings/open-round) : It contains data logs from various open round tests
+- [design-files](https://github.com/CmdOptDefeat/fe25/tree/main/design-files) : Contains the Bill of Materials, 3D-printable design files and hardware. 
+- [initial-tests](https://github.com/CmdOptDefeat/fe25/tree/main/initial-tests) : Intial tests on various sensors to ensure accurate data collection and basic object detection algorithm.
+- [hw](https://github.com/CmdOptDefeat/fe25/tree/main/hw) : Contains schematic and PCB files for the peripherals interface board.
+- [sw](https://github.com/CmdOptDefeat/fe25/tree/main/sw) : Contains PlatformIO project for the peripherals interface board.
+- [open-round](https://github.com/CmdOptDefeat/fe25/tree/main/open-round) : It contains the program files for the open round over various iterations and hardware setups. The final open round program is found in `sw/peripherals-board/src/divers`
+- [repo-assets](https://github.com/CmdOptDefeat/fe25/tree/main/repo-assets) : It contains pictures and description of the robot and its components. All other photos in the repo are also found here.
+- [obstacle-round](https://github.com/CmdOptDefeat/fe25/tree/main/obstacle-round) : Programs for the obstacle round. These are categorised in order of working alphabetically. There may be related videos too.
+- [test-data-recordings/open-round](https://github.com/CmdOptDefeat/fe25/tree/main/test-data-recordings) : It contains data logs from various open round tests
 
 > [!NOTE]
 > Random files called `.lgd-nfy0` may be seen sometimes in varioues places. These were probably created by a typo a long time ago, and despite repeated deletion, they keep spawning everywhere in the Pi's cone of the repo! Just ignore them, if they occur. 
@@ -223,7 +223,7 @@ Run the following commands in the terminal
 - $`sudo apt install python3-opencv`
 - $`sudo apt install -y python3-libcamera python3-pyqt5 python3-picamera2`
 - Refer [here](https://www.waveshare.com/wiki/UPS_HAT_(E)) to install UPS library to show details about the batteries.
-- If the Pi is accidentally shut down, and git is not working, run the following: 
+- If the Pi is accidentally shut down, and git is not working, run the following commands: 
 1. $`find .git/objects/ -type f -empty | xargs rm` - Cleaning
 2. $`git fetch -p` - Restore missing objects
 3. $`git fsck --full` - Verify
@@ -253,34 +253,14 @@ The Pi communicates with the RP2040 over the serial. When the Pi sends a command
 # Open Round
 
 Refer to `sw/peripherals-board/src/drivers/hwrev2/hwrev2_single_lidar_open_round.cpp and .hpp` files for program.
+The idea to stick to the outer wall, so even with randomisation, the extended inner wall is not hit.
 
-## Header File
-
-Public includes the logger (for debugging), vehicle command (for driving) and sets direct control of servo (A target yaw value is generally given). Private includes setup of variables for driving, turning, servo, IMU, 1D LiDARs and IMU-based straight follower. 
-
-## Implementation File
-
-### Initialisation
-- Sets up logging
-- Sets initial speed and steering
-
-### Turn Detection & Execution:
 - Uses front LiDAR to detect when to start a turn (if obstacle is close).
 - Decides turn direction (left/right) based on side LiDARs (First turn only)
 - Turns are started considering factors of distance available, yaw, current section and distance travelled. 
 - Adjusts steering (servo position) during turn based on yaw and for greater smoothness.
-- After each turn, resets variables and prepares for the next segment. Target yaw and threshold distance may be altered for better accuracy and counter drifting.
-- The idea to stick to the outer wall, so even with randomisation, the extended inner wall is not hit
-
-### Straight Movement:
-- When not turning, uses gyro (yaw) to follow a straight path.
-- Applies proportional-integral correction to steering for accurate straight-line travel.
-
-### Turn Direction Logic:
-- Chooses clockwise or anticlockwise based on which side has more open space (LiDAR difference).
-- Sets different thresholds for smoother turns depending on direction.
-
-### Stopping 
+- Target yaw and threshold distance may be altered for better accuracy and counter drifting.
+- When not turning, PI controller is used with yaw to follow a straight path accurately.
 - Counts turns; after 12 turns (3 rounds), slows down and stops at the start section.
 
 ## Flow
