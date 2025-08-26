@@ -40,7 +40,7 @@ upper2_black = np.array([49, 175, 90])
 # These are currently seen obstacles
 red_obs = []
 green_obs = []
-
+prev_obs = [(0,0,0,0),'']
 # Assigns merely colour to the row, and plan to go in that direction
 all_obs = [['','',''],
            ['','',''],
@@ -64,26 +64,41 @@ def drive_data(motor_speed,servo_steering):
     response = ser.readline().decode().strip()
     values = response.split(",")
     yaw = float(values[0])
-    distance = -float(values[14]) / 43
+    distance = -float(values[14]) / 42
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
 
+def forward(speed,steering, target_dist, stop=False):
+    global distance
+    first_dist = distance
+    while not distance - first_dist > target_dist - 3:
+        drive_data(speed,steering)
+        time.sleep(0.0005)
+    if stop: drive_data(0,steering)
+    
+def backward(speed,steering, target_dist, stop=False):
+    global distance
+    first_dist = distance
+    while not first_dist - distance > target_dist - 3:
+        drive_data(speed,steering)
+        time.sleep(0.0005)
+    if stop: drive_data(0,steering)
+
 def process_frame():
     global hsv_frame, red_obs, green_obs, hsv_roi, corrected_frame
-    # Create a mask to detect colour
+    # Mask to detect colour
     mask_red = cv2.inRange(hsv_roi, lower_red, upper_red)
     mask_green = cv2.inRange(hsv_roi, lower_green, upper_green)
-    mask_black = cv2.inRange(hsv_roi, lower1_black, upper1_black) + cv2.inRange(hsv_roi, lower2_black, upper2_black)
+    #mask_black = cv2.inRange(hsv_roi, lower1_black, upper1_black) + cv2.inRange(hsv_roi, lower2_black, upper2_black)
     
-    # Find contours for red,green and black. We don't want the hierarchy
+    # Find contours for red and green. We don't want the hierarchy
     red_contours, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     green_contours, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    black_contours, _ = cv2.findContours(mask_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    #black_contours, _ = cv2.findContours(mask_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Contours may be drawn by referring to section-a coloured-contours-roi
-    # Filter and locate obstacle bounding boxes
     red_obs = get_obstacle_positions(red_contours, red_obs)
     green_obs = get_obstacle_positions(green_contours, green_obs)
   
@@ -95,13 +110,13 @@ def process_frame():
         y = item[0][1] + 350    #ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (0,255,0), 2)
+        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (100,100,255), 2)
     for item in green_obs:
         x = item[0][0]
         y = item[0][1] + 350    # ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (0,255,0), 2)
+        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (100,255,100), 2)
 
     return corrected_frame, red_obs, green_obs
 
@@ -113,7 +128,7 @@ def get_obstacle_positions(contours, obs):
     for cnt in contours:
         if cv2.contourArea(cnt) > min_area and cv2.contourArea(cnt) < max_area:
             x,y,w,h = cv2.boundingRect(cnt)
-            if h > w or (y > 140 and abs(1200-x) < 250 and h > 100):
+            if h*1.2 > w or (y > 140 and abs(1200-x) < 250 and h > 100):
                 # TODO when driving integration done
                 obs.append([(x,y,w,h), (0,0)])
     return obs
@@ -136,18 +151,21 @@ def decide_path(red_obs, green_obs):
     # If red obstacle detected as nearest, drive left of it
     # If green obstacle detected as nearest, drive right of it
     global yaw, total_error, turns
+    global prev_obs
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
     speed = 200
     steering = 90
     path = 'Straight'
-    y = current_obs[0][1]
     x = current_obs[0][0]
+    y = current_obs[0][1]
+    w = current_obs[0][2]
+    h = current_obs[0][3]
     colour = current_obs[1]
-    if colour == 'green' and y > 40 and x < 1180: 
+    if colour == 'green' and y > 40 and x < 1200: 
         path = 'LEFT'
-        steering -= (1200-x) * 0.075
-    elif colour == 'red' and y > 40 and x > 100: 
+        steering -= (1200-x) * 0.0825
+    elif colour == 'red' and y > 40 and (x + w) > 80: 
         path = 'RIGHT'
         steering += x*0.055
     else:
@@ -158,39 +176,40 @@ def decide_path(red_obs, green_obs):
         if error > 180: error = error - 360
         elif error < -180: error = error + 360
         total_error += error
-        if error > 0: correction = error * 2.3 - total_error * 0.001    #correction to the right
-        elif error < 0: correction = error * 2.2 - total_error * 0.001  #correction to the left
-        steering = 90 + correction
+        if error > 0: correction = error * 2.5 - total_error * 0.001    #right
+        elif error < 0: correction = error * 3.6 - total_error * 0.0015 - 5  #left
+        steering = 90 + correction 
+        steering = min(max(35,steering),127)       #  Limit PID steering
         print("PI Straight")
+    if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
+        print("\n\n\n\tObstacle passed\n\n\n")
+    prev_obs = current_obs
     return path, speed, steering
 
 
 def run():
     global frame, hsv_frame, corrected_frame, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
-    while True:
-        # Read a frame from the camera
-        frame = picam2.capture_array()
-        corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # Convert the frame to HSV color space
-        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
-        hsv_roi = hsv_frame[350:720, 0:1280]        # Our region of interest is only the bottom half of the camera feed
-
-        # Process camera frame for obstacles
-        frame_processed, red_obs, green_obs = process_frame()
+    while True:        
+        frame = picam2.capture_array()  # Read a frame from the camera
+        corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
+        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)  # Convert  frame to HSV format
+        hsv_roi = hsv_frame[350:720, 0:1280]        # Region of interest is only the bottom half
+        
+        frame_processed, red_obs, green_obs = process_frame() # Process frame for obstacles
 
         # Decide navigation based on obstacle detection
         path_action, speed, steering = decide_path(red_obs, green_obs)
-        if front_dist < 100 and (distance - start_dist) > 120: 
-            drive_data(0,150)
-            break
+        if front_dist < 110 and (distance - start_dist) > 100: break # Stop for turn
+
         drive_data(speed, steering)
         print(f"Steering: {steering}")
-        # Show output
-        cv2.putText(frame_processed, f"Speed {speed} Steering {steering}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
 
+        # Camera feed and analysis display
+        cv2.putText(frame_processed, f"Speed {speed} Steering {steering}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
         cv2.imshow("Obstacle Detection", frame_processed)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):   # Manual kill switch
             break
 
 try:
@@ -203,9 +222,9 @@ try:
     run()
 
 finally:
-    drive_data(0,90)    # Stop robot
+    drive_data(0,90)            # Stop robot
     picam2.stop_preview()       # Close camera
     picam2.stop()
-    cv2.destroyAllWindows()     # Close camera feed
-    led(1.5)
+    cv2.destroyAllWindows()
+    led(1.5)                    # Blink LED
     GPIO.cleanup()
