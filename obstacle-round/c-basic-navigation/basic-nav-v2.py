@@ -6,9 +6,9 @@ import serial
 import RPi.GPIO as GPIO
 
 # Status LED
-led = 17
+LED = 17
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(led, GPIO.OUT)
+GPIO.setup(LED, GPIO.OUT)
 
 # Serial config
 # usb-Raspberry_Pi_Pico_E6625887D3859130-if00 - Pranav
@@ -19,15 +19,10 @@ tuning = Picamera2.load_tuning_file("imx219.json")
 picam2 = Picamera2(tuning = tuning)
 
 config = picam2.create_video_configuration(main={"size": (1280, 720)})
-picam2.configure(config)
-picam2.start_preview()
-GPIO.output(led, GPIO.HIGH)
-time.sleep(2)  # Let the camera warm up
-GPIO.output(led, GPIO.LOW)
-picam2.start()
 
 # Declaring some global variables
-yaw, target_yaw, total_error, distance = 0, 0, 0, 0
+yaw, target_yaw, total_error= 0, 0, 0
+distance, start_dist = 0, 0
 front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
 turns, turning = 0, False
 
@@ -52,10 +47,15 @@ all_obs = [['','',''],
            ['','',''],
            ['','','']
            ]
+def led(duration=1.5):
+    GPIO.output(LED, GPIO.HIGH)
+    time.sleep(duration)  # Let the camera warm up
+    GPIO.output(LED, GPIO.LOW)
 
 def drive_data(motor_speed,servo_steering):
     # It sends driving commands to RP2040 and gets back sensor data
-    global yaw, distance, left_dist, front_dist, right_dist
+    global yaw, distance, start_dist
+    global left_dist, front_dist, right_dist
     # Send command
     command = f"{motor_speed},{servo_steering}\n"
     ser.write(command.encode())
@@ -68,7 +68,7 @@ def drive_data(motor_speed,servo_steering):
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
-    print(f"Received Data - Yaw: {yaw}, Distance: {distance} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
+    print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
 
 def process_frame():
     global hsv_frame, red_obs, green_obs, hsv_roi, corrected_frame
@@ -113,11 +113,8 @@ def get_obstacle_positions(contours, obs):
     for cnt in contours:
         if cv2.contourArea(cnt) > min_area and cv2.contourArea(cnt) < max_area:
             x,y,w,h = cv2.boundingRect(cnt)
-            if h > w or (y > 140 and abs(1200-x) < 250 and h > 100):              # Prevents parking walls being detected as obstacles in most orientations
-                # TODO when driving integration done; Second tuple gives row
-                #if front_dist > 100 : wall_dist = front_dist
-                #else: wall_dist = 300 - 30 - back_dist
-                #if wall_dist >= 200 and y/wall_dist > 
+            if h > w or (y > 140 and abs(1200-x) < 250 and h > 100):
+                # TODO when driving integration done
                 obs.append([(x,y,w,h), (0,0)])
     return obs
 
@@ -184,9 +181,8 @@ def run():
 
         # Decide navigation based on obstacle detection
         path_action, speed, steering = decide_path(red_obs, green_obs)
-        if front_dist < 100 and distance - start_dist > 200: 
-            steering = 150
-            speed = 0
+        if front_dist < 100 and (distance - start_dist) > 120: 
+            drive_data(0,150)
             break
         drive_data(speed, steering)
         print(f"Steering: {steering}")
@@ -198,6 +194,10 @@ def run():
             break
 
 try:
+    picam2.configure(config)
+    picam2.start_preview()
+    led()
+    picam2.start()
     drive_data(0,90)
     start_dist = distance
     run()
@@ -207,7 +207,5 @@ finally:
     picam2.stop_preview()       # Close camera
     picam2.stop()
     cv2.destroyAllWindows()     # Close camera feed
-    GPIO.output(led, GPIO.HIGH)
-    time.sleep(1.5)
-    GPIO.output(led, GPIO.LOW)
+    led(1.5)
     GPIO.cleanup()
