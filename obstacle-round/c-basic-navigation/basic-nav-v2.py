@@ -149,7 +149,7 @@ def nearest_obstacle():
 def decide_path(red_obs, green_obs):
     # Needs to be updated
     # If red obstacle detected as nearest, drive left of it
-    # If green obstacle detected as nearest, drive right of it
+    # If green obstacle detected as nearest, drive right of itq 
     global yaw, total_error, turns
     global prev_obs
     current_obs = nearest_obstacle()
@@ -178,6 +178,7 @@ def decide_path(red_obs, green_obs):
         total_error += error
         if error > 0: correction = error * 2.5 - total_error * 0.001    #right
         elif error < 0: correction = error * 3.6 - total_error * 0.0015 - 5  #left
+        print(error)
         steering = 90 + correction 
         steering = min(max(35,steering),127)       #  Limit PID steering
         print("PI Straight")
@@ -200,7 +201,7 @@ def run():
 
         # Decide navigation based on obstacle detection
         path_action, speed, steering = decide_path(red_obs, green_obs)
-        if front_dist < 110 and (distance - start_dist) > 100: break # Stop for turn
+        if front_dist < 110 and (distance - start_dist) > 150: break # Stop for turn
 
         drive_data(speed, steering)
         print(f"Steering: {steering}")
