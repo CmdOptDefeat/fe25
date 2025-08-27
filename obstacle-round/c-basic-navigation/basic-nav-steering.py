@@ -1,8 +1,6 @@
 '''
-This does not work, refer to basic-nav-v2.py
-
-This is a program to test a basic straight drive of the robot over 3 sections
-There is no turning algorithm here
+This does not work, 
+Refer to basic-nav-v2.py
 '''
 
 import cv2
