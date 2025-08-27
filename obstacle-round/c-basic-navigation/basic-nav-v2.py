@@ -41,12 +41,7 @@ upper2_black = np.array([49, 175, 90])
 red_obs = []
 green_obs = []
 prev_obs = [(0,0,0,0),'']
-# Assigns merely colour to the row, and plan to go in that direction
-all_obs = [['','',''],
-           ['','',''],
-           ['','',''],
-           ['','','']
-           ]
+
 def led(duration=1.5):
     GPIO.output(LED, GPIO.HIGH)
     time.sleep(duration)  # Let the camera warm up
@@ -88,7 +83,7 @@ def backward(speed,steering, target_dist, stop=False):
 
 def process_frame():
     global hsv_frame, red_obs, green_obs, hsv_roi, corrected_frame
-    # Mask to detect colour
+    # Masks to detect colours
     mask_red = cv2.inRange(hsv_roi, lower_red, upper_red)
     mask_green = cv2.inRange(hsv_roi, lower_green, upper_green)
     #mask_black = cv2.inRange(hsv_roi, lower1_black, upper1_black) + cv2.inRange(hsv_roi, lower2_black, upper2_black)
@@ -103,8 +98,7 @@ def process_frame():
     green_obs = get_obstacle_positions(green_contours, green_obs)
   
     # Draw boxes around obstacles for visualization
-    print(f"Red: {red_obs}")
-    print(f"Green: {green_obs}")
+    print(f"Red: {red_obs} \nGreen: {green_obs}")
     for item in red_obs:
         x = item[0][0]
         y = item[0][1] + 350    #ROI was cropped
@@ -146,30 +140,24 @@ def nearest_obstacle():
             nearest_obs[1] = 'green'
     return nearest_obs
 
-def decide_path(red_obs, green_obs):
-    # Needs to be updated
-    # If red obstacle detected as nearest, drive left of it
-    # If green obstacle detected as nearest, drive right of itq 
+def decide_path():
+    # If red obstacle detected as nearest, drive to its right
+    # If green obstacle detected as nearest, drive to its left
     global yaw, total_error, turns
     global prev_obs
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
     speed = 200
     steering = 90
-    path = 'Straight'
     x = current_obs[0][0]
     y = current_obs[0][1]
     w = current_obs[0][2]
     h = current_obs[0][3]
     colour = current_obs[1]
-    if colour == 'green' and y > 40 and x < 1200: 
-        path = 'LEFT'
-        steering -= (1200-x) * 0.0825
-    elif colour == 'red' and y > 40 and (x + w) > 80: 
-        path = 'RIGHT'
-        steering += x*0.055
+    if colour == 'green' and y > 40 and x < 1200: steering -= (1200-x) * 0.0825
+    elif colour == 'red' and y > 40 and (x + w) > 80: steering += x*0.055
     else:
-        # Go straight for a bi after obstacle goes out of view
+        # PI algorithm to mainain a yaw
         target_yaw = (turns * 90) % 360
         error = target_yaw - yaw
         correction = 0
@@ -185,10 +173,11 @@ def decide_path(red_obs, green_obs):
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed\n\n\n")
     prev_obs = current_obs
-    return path, speed, steering
+    return speed, steering
 
 
 def run():
+    # Main program function
     global frame, hsv_frame, corrected_frame, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
     while True:        
@@ -200,7 +189,7 @@ def run():
         frame_processed, red_obs, green_obs = process_frame() # Process frame for obstacles
 
         # Decide navigation based on obstacle detection
-        path_action, speed, steering = decide_path(red_obs, green_obs)
+        speed, steering = decide_path()
         if front_dist < 110 and (distance - start_dist) > 150: break # Stop for turn
 
         drive_data(speed, steering)
