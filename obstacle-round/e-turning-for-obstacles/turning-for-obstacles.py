@@ -208,7 +208,7 @@ def decide_turn_path():
     if error > 180: error = error - 360
     elif error < -180: error = error + 360
     print(f"Target yaw = {target_yaw}, error = {error}")
-    if start_pos == 'outer':        
+    if start_pos == 'outer':            # Not yet working  
         if abs(error) > 80 and turning:
             if turn_dir == 1: steering = 145
             elif turn_dir == -1: steering = 10
@@ -251,15 +251,21 @@ def decide_turn_path():
         elif not turning:
             steering = pi_control(error)
 
-        if turning and abs(error)<10: 
+        if turning and ((abs(error)<10 and turn_forward == 3) or (abs(error)<25 and turn_forward == 0)):       # End of turn determination
             turning = False
             turn_forward = 0
             turns += 1
+            logging.info("Turn completed")
+            print("\n\n\tTurn completed\n")
 
-        if prev_turns < turns:
-            print("\n\n\nGoing back post turn\n\n\n") 
+        # Go back if had to turn closer to inner wall and need to change lanes again due to different colour
+        if prev_turns < turns and current_obs[1] != turn_obs[1] and current_obs[1] != '' and turn_obs[1] != '' and start_pos == 'inner':
+            print("\n\tGoing back post turn\n\n") 
             backward(225,90,13,True)
             logging.info("Going back")
+        else:
+            print("\n\tNo need to go back post turn completion\n\n") 
+            logging.info("Not going back")
     print(turn_forward)
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed!\n\n\n")
