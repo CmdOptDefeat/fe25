@@ -105,13 +105,20 @@ The [Bill of Materials](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-En
 - First, the region of interest (ROI) is taken as the bottom half of the feed (this is for our camera placement. May vary for other setups).
 - Then, coloured masks (one each for red and green) are applied, followed by OpenCV's controur detection to detect surfaces. Data like position, height and width of the contours may be obtained from the other OpenCV methods.
 - If the contours detected meet the required criteria (like size, height-width ratio), they are classified as obstacles. For our benefit, rectangles are drawn around the obstacles.
-- Using the data available, including obstacle position, yaw and distance travelled, the required steering is calculated to pass the obstacle on the correct side, when not at a turn (Red - right, green - left)
-- When the side chosen is preceded by a turn, the turn is initiated at a predefined distance from the wall ahead. (Ex: Clockwise round, green -> turn early)
+- Using the data available, including obstacle position, yaw and distance travelled, the required steering is calculated to pass the obstacle on the correct side, when not at a turn (Red - right, green - left) on a linear scale
+- For turns:
+1. Starting closer to the inner wall: The seen obstacle before the turn is considered. If turn must to taken sticking to the inner wall, it is immediately taken. If the turn must be taken to get closer to the outer wall, a curve(like a question-mark) is followed. If there is another obstacle of the opposite colour, then the robot the goes back some distance to be able to do the manoeuvre.
+2. Starting closer to the outer wall: TODO
+3. In case of the parking wall being there on every 4th turn, the turning and linear coefficients are changed.
 
 Improvements:
 1. The RPLidar might have been used effectively with better drivers with the standard Raspbian OS.
-2. A more accurate formula to convert y-coordinate of obstacle obtained by the camera into actual distance
+2. A smaller robot would have been more agile, making both turning and straight section navigation much easier.
+3. Having the axles closer would enable for tighter turns.
 
+## Unparking and Parking
+
+TODO
 
 # Robot Assembly
 
