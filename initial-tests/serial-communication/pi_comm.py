@@ -28,6 +28,7 @@ def main():
             response = ser.readline().decode().strip()
             print(response)
             values = response.split(",")
+            values.pop()
             yaw = float(values[0])
             distance = -float(values[14]) / 30
             left_dist = int(values[12])
