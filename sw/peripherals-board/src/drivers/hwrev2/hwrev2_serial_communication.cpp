@@ -12,22 +12,19 @@ hw_rev_2_SerialCommunication::hw_rev_2_SerialCommunication(VehicleConfig cfg){
 void hw_rev_2_SerialCommunication::init(ILogger *logger){
 
   _logger = logger;
-  _serialTask = new SchedulerTask(_serialCallbackWrapper, 10);  // 10 ms : 100 hz
+  _serialTask = new SchedulerTask(_serialCallbackWrapper, 1000);  // 10 ms : 100 hz
   Serial.begin(115200);
 
 }
 
 VehicleCommand hw_rev_2_SerialCommunication::update(VehicleData data, VehicleCommand cmd){
 
-  VehicleCommand returnCommand;
+  _data = data;
+  _displayCmd = cmd;
 
   _serialTask->update();
 
-  returnCommand.targetSpeed = _targetSpeed;
-  returnCommand.targetYaw = _targetYaw;
-  returnCommand.instruction = _instruction;
-
-  return returnCommand;
+  return _cmd;
   
 }
 
@@ -81,6 +78,14 @@ void hw_rev_2_SerialCommunication::_sendFormattedData(VehicleData data){
   message += String(data.magCalib);
   message += seperator;
 
+  message += String(_displayCmd.targetSpeed);
+  message += seperator;
+  message += String(_displayCmd.targetYaw);
+  message += seperator;
+
+  message += String(data.instruction);
+  message += seperator;
+
   message += '\n';
   Serial.print(message);
 
@@ -88,13 +93,54 @@ void hw_rev_2_SerialCommunication::_sendFormattedData(VehicleData data){
 
 void hw_rev_2_SerialCommunication::_serialCallback(){
 
-  Serial.println("test");
-  _instruction = NO_INSTRUCTION;
-  _targetSpeed = 0;
-  _targetYaw = 0;
+  _sendFormattedData(_data);
+  _parseSerialInput();
 
 }
 
 void hw_rev_2_SerialCommunication::_serialCallbackWrapper(){
   commClassPtr->_serialCallback();
+}
+
+void hw_rev_2_SerialCommunication::_parseSerialInput(){
+
+  if(Serial.available()){
+
+    String rawString = Serial.readStringUntil('\n');
+
+    if(!_isLegalCommand(rawString)){
+      
+      _logger->sendMessage("hw_rev_2_SerialCommunication::_parseSerialInput", _logger->ERROR, "Invalid command string read: " + rawString);
+      return;
+
+    }
+    else{
+
+      int comma1Pos = rawString.indexOf(',');
+      int comma2Pos = rawString.indexOf(',', comma1Pos + 1);
+
+      _cmd.targetSpeed = rawString.substring(0, comma1Pos).toInt();
+      _cmd.targetYaw   = rawString.substring(comma1Pos + 1, comma2Pos) .toInt();
+      _cmd.instruction = (VehicleInstruction)(rawString.substring(comma2Pos + 1).toInt());  // cast int to VehicleInstruction
+
+    }
+
+  }
+
+}
+
+bool hw_rev_2_SerialCommunication::_isLegalCommand(String inputString){
+
+  int commaCount = 0;
+
+  for(int i = 0; i < inputString.length(); i++){
+
+    if(inputString.charAt(i) == ','){
+      commaCount++;
+    }
+
+  }
+
+  return commaCount == 2;
+
 }

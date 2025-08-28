@@ -15,12 +15,15 @@ public:
 
 private:
   VehicleConfig _config;
+  VehicleCommand _cmd;
+  VehicleData _data;
+  VehicleCommand _displayCmd;
   ILogger* _logger;
-  int16_t _targetSpeed; 
-  uint16_t _targetYaw;  
   VehicleInstruction _instruction;
   void _serialCallback();
   void _sendFormattedData(VehicleData data);
+  void _parseSerialInput();
+  bool _isLegalCommand(String inputString);
   static void _serialCallbackWrapper();
   SchedulerTask *_serialTask;
 

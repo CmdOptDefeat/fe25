@@ -180,7 +180,7 @@ void loop(){
 
   // Update RPi on communication, set core instruction
   coreSerialCommand = serialCommunication.update(coreVehicleData, coreVehicleCommand);
-  coreSerialCommand.instruction = coreVehicleInstructionFromPi;
+  coreVehicleInstructionFromPi = coreSerialCommand.instruction;
 
 }
 
@@ -419,6 +419,7 @@ void coreUnpark(){
   }
 
   coreVehicleCommand = unparkAlgorithm.drive(coreVehicleData);
+  coreVehicleInstructionToPi = NO_INSTRUCTION;
 
 }
 
@@ -427,6 +428,7 @@ void coreDriveFromPi(){
   if(coreSerialCommand.instruction == RPI_RP2040_START_PARKING){
     
     coreControlState = PARK;
+    coreVehicleInstructionToPi = RPI_RP2040_START_PARKING;
     return;
 
   }
@@ -446,7 +448,7 @@ void corePark(){
 
   }
 
-  coreVehicleCommand = unparkAlgorithm.drive(coreVehicleData);
+  coreVehicleCommand = parkAlgorithm.drive(coreVehicleData);
 
 }
 
