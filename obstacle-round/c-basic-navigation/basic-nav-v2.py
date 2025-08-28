@@ -4,6 +4,21 @@ from picamera2 import Picamera2
 import time
 import serial
 import RPi.GPIO as GPIO
+from datetime import datetime
+import logging, os
+
+log_dir = 'obstacle-round/c-basic-navigation/logs'
+now = datetime.now()
+log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+log_path = os.path.join(log_dir, log_filename)
+# Configure logging to append mode
+logging.basicConfig(
+    filename=log_path,
+    filemode='a',  # Append mode
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+print("Created log file")
 
 # Status LED
 LED = 17
@@ -64,6 +79,7 @@ def drive_data(motor_speed,servo_steering):
     front_dist = int(values[9])
     right_dist = int(values[10])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
+    logging.info(values)        # Logging
 
 def forward(speed,steering, target_dist, stop=False):
     global distance

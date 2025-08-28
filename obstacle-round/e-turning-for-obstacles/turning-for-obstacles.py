@@ -22,7 +22,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
-print("created log file")
+print("Created log file")
 # Status LED
 LED = 17
 GPIO.setmode(GPIO.BCM)
