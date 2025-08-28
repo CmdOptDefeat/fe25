@@ -9,9 +9,12 @@
 
 #include "Arduino.h"
 
+// COMPETITION_OPEN_ROUND, COMPETITION_OBSTACLE_ROUND
+//#define COMPETITION_OPEN_ROUND
+#define COMPETITION_OBSTACLE_ROUND
 #define VEHICLE_DRIVERSET_HWREV2                        // HWREV2 **NOTE** HWREV1 DRIVERS ARE INCOMPLETE, BUGGY, OR MISSING!!
 #define VEHICLE_SW_STATUS "DEV"                         // String containing status of software. Printed over debug port
-#define VEHICLE_SW_NAME "Unparking Module Tests"          // String containing name of software. Printed over debug port
+#define VEHICLE_SW_NAME "Serial Integration Tests"      // String containing name of software. Printed over debug port
 
 #include <driverconfig.hpp>                             // **NOTE** All config #defines must be before this include
 #include <SensorManager.hpp>
@@ -32,7 +35,10 @@ VEHICLE_DRIVER_SERIAL_COMMUNICATION serialCommunication(VEHICLE_GET_CONFIG);
 VEHICLE_DRIVER_DEBUG_LOG debugLogger(VEHICLE_GET_CONFIG);
 VEHICLE_DRIVER_RGB_LED rgbLED(VEHICLE_GET_CONFIG);
 SensorManager sensorManager(VEHICLE_GET_CONFIG);
+
+
 VehicleCommand activeDriveCommand;
+
 
 
 void debugPrintVehicleData(VehicleData data, VehicleCommand cmd);
@@ -54,7 +60,7 @@ void setup(){
   debugLogger.addKillHandler(debugKillCallback);
   debugLogger.addBootselHandler(debugBootselCallback);
   debugLogger.addRebootHandler(debugRebootCallback);
-  
+
   debugLogHeader();
 
   rgbLED.init(&debugLogger);

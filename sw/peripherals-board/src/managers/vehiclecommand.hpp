@@ -13,6 +13,6 @@ struct VehicleCommand{
 
   int16_t targetSpeed; // Note from DIY: Putting negative values into an *unsigned* int16 was not a good idea
   uint16_t targetYaw;
-  VehicleInstruction instruction = NO_INSTRUCTION;  // initialised by default to NO_INSTRUCTION
+  VehicleInstruction instruction = NO_INSTRUCTION;  // initialized by default to NO_INSTRUCTION
 
 };
