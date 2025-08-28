@@ -7,19 +7,6 @@ import RPi.GPIO as GPIO
 from datetime import datetime
 import logging, os
 
-log_dir = 'obstacle-round/c-basic-navigation/logs'
-now = datetime.now()
-log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
-log_path = os.path.join(log_dir, log_filename)
-# Configure logging to append mode
-logging.basicConfig(
-    filename=log_path,
-    filemode='a',  # Append mode
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-print("Created log file")
-
 # Status LED
 LED = 17
 GPIO.setmode(GPIO.BCM)
@@ -32,8 +19,29 @@ ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if
 
 tuning = Picamera2.load_tuning_file("imx219.json")
 picam2 = Picamera2(tuning = tuning)
+config = picam2.create_video_configuration(main={"size": (1280, 720),"format": 'RGB888'})
 
-config = picam2.create_video_configuration(main={"size": (1280, 720)})
+log_dir = 'obstacle-round/c-basic-navigation/logs'
+now = datetime.now()
+log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+log_path = os.path.join(log_dir, log_filename)
+# Configure logging to append mode
+logging.basicConfig(
+    filename=log_path,
+    filemode='a',  # Append mode
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+video_dir = "obstacle-round/c-basic-navigation/videos"
+os.makedirs(video_dir, exist_ok=True)
+output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
+
+fps = 30
+frame_size = (1280, 720)
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
+video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
+print("Created log file, initialised video")
 
 # Declaring some global variables
 yaw, target_yaw, total_error= 0, 0, 0
@@ -98,7 +106,7 @@ def backward(speed,steering, target_dist, stop=False):
     if stop: drive_data(0,steering)
 
 def process_frame():
-    global hsv_frame, red_obs, green_obs, hsv_roi, corrected_frame
+    global hsv_frame, red_obs, green_obs, hsv_roi, frame
     # Masks to detect colours
     mask_red = cv2.inRange(hsv_roi, lower_red, upper_red)
     mask_green = cv2.inRange(hsv_roi, lower_green, upper_green)
@@ -120,15 +128,15 @@ def process_frame():
         y = item[0][1] + 350    #ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (100,100,255), 2)
+        cv2.rectangle(frame, (x,y), (x+w,y+h), (100,100,255), 2)
     for item in green_obs:
         x = item[0][0]
         y = item[0][1] + 350    # ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (100,255,100), 2)
+        cv2.rectangle(frame, (x,y), (x+w,y+h), (100,255,100), 2)
 
-    return corrected_frame, red_obs, green_obs
+    return frame, red_obs, green_obs
 
 def get_obstacle_positions(contours, obs):
     obs = []
@@ -138,7 +146,7 @@ def get_obstacle_positions(contours, obs):
     for cnt in contours:
         if cv2.contourArea(cnt) > min_area and cv2.contourArea(cnt) < max_area:
             x,y,w,h = cv2.boundingRect(cnt)
-            if h*1.2 > w or (y > 140 and abs(1200-x) < 250 and h > 100):
+            if h*2 > w or (y > 140 and abs(1200-x) < 250 and h > 100):
                 # TODO when driving integration done
                 obs.append([(x,y,w,h), (0,0)])
     return obs
@@ -163,7 +171,7 @@ def decide_path():
     global prev_obs
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
-    speed = 200
+    speed = 0
     steering = 90
     x = current_obs[0][0]
     y = current_obs[0][1]
@@ -191,15 +199,14 @@ def decide_path():
     prev_obs = current_obs
     return speed, steering
 
-
 def run():
     # Main program function
-    global frame, hsv_frame, corrected_frame, hsv_roi
+    global frame, hsv_frame, hsv_roi, video_out
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
-        corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
-        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)  # Convert  frame to HSV format
+        #corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
+        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # Convert  frame to HSV format
         hsv_roi = hsv_frame[350:720, 0:1280]        # Region of interest is only the bottom half
         
         frame_processed, red_obs, green_obs = process_frame() # Process frame for obstacles
@@ -212,6 +219,7 @@ def run():
         print(f"Steering: {steering}")
 
         # Camera feed and analysis display
+        video_out.write(frame_processed)
         cv2.putText(frame_processed, f"Speed {speed} Steering {steering}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
         cv2.imshow("Obstacle Detection", frame_processed)
 
@@ -229,6 +237,7 @@ try:
 
 finally:
     drive_data(0,90)            # Stop robot
+    video_out.release()
     picam2.stop_preview()       # Close camera
     picam2.stop()
     cv2.destroyAllWindows()
