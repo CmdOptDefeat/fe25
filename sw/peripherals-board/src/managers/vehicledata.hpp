@@ -23,6 +23,8 @@ struct VehicleData{
   uint8_t accelCalib = 0;
   uint8_t magCalib = 0;
 
+  bool roundDirectionCW = false; // true if clockwise, false if counterclockwise
+
   VehicleInstruction instruction = NO_INSTRUCTION;
 
 };
