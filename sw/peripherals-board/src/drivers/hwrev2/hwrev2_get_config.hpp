@@ -45,7 +45,7 @@ VehicleConfig hwrev2_getConfig(){
   cfg.limitsConfig.maxForwardSpeed          = 500;
 
   cfg.constantsConfig.ticksPerCM            = 40;
-  cfg.constantsConfig.debugSerialBaudRate   = 921600;
+  cfg.constantsConfig.debugSerialBaudRate   = 115200;
   cfg.constantsConfig.rpiSerialBaudRate     = 115200;
 
   cfg.addressConfig.bnoAddr                 = 0x28;
