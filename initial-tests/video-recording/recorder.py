@@ -14,9 +14,9 @@ picam2.configure(video_config)
 picam2.start()
 
 # VideoWriter setup
-fps = 30  # You can change this
+fps = 30 
 frame_size = (1280, 720)
-fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Use 'MJPG', 'X264', or 'mp4v' for other formats
+fourcc = cv2.VideoWriter_fourcc(*'mp4v') # Format
 out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
 
 print("Recording started. Press Ctrl+C to stop.")
@@ -25,7 +25,6 @@ try:
     while True:
         frame = picam2.capture_array()
         out.write(frame)
-        # Optional: Display frame
         cv2.imshow('Recording', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
