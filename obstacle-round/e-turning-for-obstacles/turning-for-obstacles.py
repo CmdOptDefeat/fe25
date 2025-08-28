@@ -1,3 +1,7 @@
+'''
+This programs starts from where the basic-nav-v2 program ends, i.e start of turn, and ensure the robott completes the turn upto crossing the obstacle markers nearest to the turn
+'''
+
 import cv2
 import numpy as np
 from picamera2 import Picamera2
@@ -24,7 +28,7 @@ config = picam2.create_video_configuration(main={"size": (1280, 720)})
 yaw, target_yaw, total_error= 0, 0, 0
 distance, start_dist = 0, 0
 front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-turns, turning = 0, False
+turn_dir, turns, turning = 1, 0, False  # 1:Clockwise; -1:Anticlockwise
 
 #Define colour ranges
 lower_red = np.array([0, 120, 88])
@@ -36,6 +40,8 @@ upper1_black = np.array([65, 130, 60])
 lower2_black = np.array([40, 130, 50])
 upper2_black = np.array([49, 175, 90])
 # The pink parking pieces also show up as red at home!
+
+start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
 
 # These are currently seen obstacles
 red_obs = []
@@ -83,22 +89,17 @@ def backward(speed,steering, target_dist, stop=False):
 
 def process_frame():
     global hsv_frame, red_obs, green_obs, hsv_roi, corrected_frame
-    # Masks to detect colours
     mask_red = cv2.inRange(hsv_roi, lower_red, upper_red)
     mask_green = cv2.inRange(hsv_roi, lower_green, upper_green)
-    #mask_black = cv2.inRange(hsv_roi, lower1_black, upper1_black) + cv2.inRange(hsv_roi, lower2_black, upper2_black)
     
-    # Find contours for red and green. We don't want the hierarchy
     red_contours, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     green_contours, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    #black_contours, _ = cv2.findContours(mask_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Contours may be drawn by referring to section-a coloured-contours-roi
     red_obs = get_obstacle_positions(red_contours, red_obs)
     green_obs = get_obstacle_positions(green_contours, green_obs)
   
-    # Draw boxes around obstacles for visualization
-    print(f"Red: {red_obs} \nGreen: {green_obs}")
+    print(f"Red: {red_obs}")
+    print(f"Green: {green_obs}")
     for item in red_obs:
         x = item[0][0]
         y = item[0][1] + 350    #ROI was cropped
@@ -140,30 +141,38 @@ def nearest_obstacle():
             nearest_obs[1] = 'green'
     return nearest_obs
 
-def decide_path():
-    # If red obstacle detected as nearest, drive to its right
-    # If green obstacle detected as nearest, drive to its left
-    global yaw, total_error, turns
+def decide_turn_path():
+    # Start a tight turn, after around 30° check:
+    # If red obstacle detected drive to ots right
+    # If green obstacle detected drive to its right 
+    global yaw, total_error, turns, turning
     global prev_obs
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
     speed = 200
     steering = 90
+    path = 'Straight'
     x = current_obs[0][0]
     y = current_obs[0][1]
     w = current_obs[0][2]
     h = current_obs[0][3]
     colour = current_obs[1]
-    if colour == 'green' and y > 40 and x < 1200: steering -= (1200-x) * 0.0825
-    elif colour == 'red' and y > 40 and (x + w) > 80: steering += x*0.055
-    else:
-        # PI algorithm to mainain a yaw
-        target_yaw = (turns * 90) % 360
-        error = target_yaw - yaw
-        correction = 0
-        if error > 180: error = error - 360
-        elif error < -180: error = error + 360
+    target_yaw = (turn_dir*(turns+1)*90 + 360) % 360
+    error = target_yaw - yaw
+    if error > 180: error = error - 360
+    elif error < -180: error = error + 360
+    if abs(error) > 60 and turning:
+        if turn_dir == 1: steering = 150
+        elif turn_dir == -1: steering = 0
+    elif colour == 'green' and y > 40 and x < 1200: 
+        path = 'LEFT'
+        steering -= (1200-x) * 0.0825
+    elif colour == 'red' and y > 40 and (x + w) > 80: 
+        path = 'RIGHT'
+        steering += x*0.055
+    else:    
         total_error += error
+        correction = 0
         if error > 0: correction = error * 2.5 - total_error * 0.001    #right
         elif error < 0: correction = error * 3.6 - total_error * 0.0015 - 5  #left
         print(error)
@@ -173,11 +182,10 @@ def decide_path():
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed\n\n\n")
     prev_obs = current_obs
-    return speed, steering
+    return path, speed, steering
 
 
 def run():
-    # Main program function
     global frame, hsv_frame, corrected_frame, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
     while True:        
@@ -189,8 +197,8 @@ def run():
         frame_processed, red_obs, green_obs = process_frame() # Process frame for obstacles
 
         # Decide navigation based on obstacle detection
-        speed, steering = decide_path()
-        if front_dist < 110 and (distance - start_dist) > 150: break # Stop for turn
+        path_action, speed, steering = decide_turn_path()
+        if front_dist < 110 and (distance - start_dist) > 100: break # Stop after turn
 
         drive_data(speed, steering)
         print(f"Steering: {steering}")
@@ -209,6 +217,7 @@ try:
     picam2.start()
     drive_data(0,90)
     start_dist = distance
+    turning = True
     run()
 
 finally:
