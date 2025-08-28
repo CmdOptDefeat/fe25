@@ -29,7 +29,7 @@ def main():
             print(response)
             values = response.split(",")
             yaw = float(values[0])
-            distance = - float(values[14]) / 42
+            distance = float(values[14]) / 30
             left_dist = int(values[12])
             front_dist = int(values[9])
             right_dist = int(values[10])

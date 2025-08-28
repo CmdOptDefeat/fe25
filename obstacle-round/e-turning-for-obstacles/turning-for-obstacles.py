@@ -41,7 +41,7 @@ lower2_black = np.array([40, 130, 50])
 upper2_black = np.array([49, 175, 90])
 # The pink parking pieces also show up as red at home!
 
-start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
+start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
 
 # These are currently seen obstacles
 red_obs = []
@@ -65,7 +65,7 @@ def drive_data(motor_speed,servo_steering):
     response = ser.readline().decode().strip()
     values = response.split(",")
     yaw = float(values[0])
-    distance = -float(values[14]) / 42
+    distance = -float(values[14]) / 29.5
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
@@ -74,17 +74,17 @@ def drive_data(motor_speed,servo_steering):
 def forward(speed,steering, target_dist, stop=False):
     global distance
     first_dist = distance
-    while not distance - first_dist > target_dist - 3:
+    while not distance - first_dist > target_dist - 8:
         drive_data(speed,steering)
-        time.sleep(0.0005)
+        time.sleep(0.0001)
     if stop: drive_data(0,steering)
     
 def backward(speed,steering, target_dist, stop=False):
     global distance
     first_dist = distance
-    while not first_dist - distance > target_dist - 3:
-        drive_data(speed,steering)
-        time.sleep(0.0005)
+    while not first_dist - distance > target_dist - 8:
+        drive_data(-speed,steering)
+        time.sleep(0.0001)
     if stop: drive_data(0,steering)
 
 def process_frame():
@@ -141,6 +141,18 @@ def nearest_obstacle():
             nearest_obs[1] = 'green'
     return nearest_obs
 
+def pi_control(error):
+    global total_error
+    total_error += error
+    correction = 0
+    if error > 0: correction = error * 2.5 - total_error * 0.001    #right
+    elif error < 0: correction = error * 3.3 - total_error * 0.0013 - 2  #left
+    print(error)
+    steering = 90 + correction 
+    steering = min(max(35,steering),127)       #  Limit PID steering
+    print("PI Straight")
+    return steering
+
 def decide_turn_path():
     # Start a tight turn, after around 30° check:
     # If red obstacle detected drive to ots right
@@ -161,33 +173,45 @@ def decide_turn_path():
     error = target_yaw - yaw
     if error > 180: error = error - 360
     elif error < -180: error = error + 360
-    if abs(error) > 60 and turning:
-        if turn_dir == 1: steering = 150
-        elif turn_dir == -1: steering = 0
-    elif colour == 'green' and y > 40 and x < 1200: 
-        path = 'LEFT'
-        steering -= (1200-x) * 0.0825
-    elif colour == 'red' and y > 40 and (x + w) > 80: 
-        path = 'RIGHT'
-        steering += x*0.055
-    else:    
-        total_error += error
-        correction = 0
-        if error > 0: correction = error * 2.5 - total_error * 0.001    #right
-        elif error < 0: correction = error * 3.6 - total_error * 0.0015 - 5  #left
-        print(error)
-        steering = 90 + correction 
-        steering = min(max(35,steering),127)       #  Limit PID steering
-        print("PI Straight")
+    print(f"Target yaw = {target_yaw}, error = {error}")
+    if start_pos == 'outer':        
+        if abs(error) > 80 and turning:
+            if turn_dir == 1: steering = 145
+            elif turn_dir == -1: steering = 10
+        elif abs(error) > 48 and turning:
+            if turn_dir == 1: steering = 155
+            elif turn_dir == -1: steering = 3    
+        elif colour == 'green' and y > 40 and x < 1260: 
+            path = 'LEFT'
+            steering -= (1200-x) * 0.09
+        elif colour == 'red' and y > 40 and (x + w) > 80: 
+            path = 'RIGHT'
+            steering += x*0.08
+        else:
+            steering = pi_control(error)    
+        if abs(error) < 15 and turning: 
+            turning = False
+            turns += 1
+    elif start_pos == 'inner':
+        if colour == 'red' and turning:
+            pass
+        elif colour == 'green' and turning:
+            pass
+        else:
+            pass
+        if abs(error) < 15 and turning: 
+            turning = False
+            turns += 1
+
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed\n\n\n")
     prev_obs = current_obs
     return path, speed, steering
 
-
 def run():
     global frame, hsv_frame, corrected_frame, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
+    if front_dist < 95: backward(200,90,100-front_dist,True)
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
         corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
@@ -198,7 +222,7 @@ def run():
 
         # Decide navigation based on obstacle detection
         path_action, speed, steering = decide_turn_path()
-        if front_dist < 110 and (distance - start_dist) > 100: break # Stop after turn
+        if (distance - start_dist) > 175: break # Stop after turn
 
         drive_data(speed, steering)
         print(f"Steering: {steering}")
