@@ -110,8 +110,7 @@ void hw_rev_2_UARTLogger::handleInput(){
       return;
     }
 
-    sendMessage("hw_rev_2_UARTLogger::handleInput", INFO, "Unable to parse command " + rawCommand);
-    
+    sendMessage("hw_rev_2_UARTLogger::handleInput", INFO, "Unable to parse command " + rawCommand);    
 
   }
 
