@@ -1,0 +1,4 @@
+2025-08-28 13:27:50,393 - INFO - Program started
+2025-08-28 13:27:50,393 - INFO - Example log message
+2025-08-28 13:27:50,393 - WARNING - This is a warning
+2025-08-28 13:27:50,393 - ERROR - This is an error
