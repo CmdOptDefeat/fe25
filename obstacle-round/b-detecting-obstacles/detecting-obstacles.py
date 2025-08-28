@@ -1,18 +1,27 @@
 import cv2
 import numpy as np
 from picamera2 import Picamera2
-import time
+import time, os
+from datetime import datetime
+
+now = datetime.now()
+video_save_dir = "obstacle-round/b-detecting-obstacles/videos"
+os.makedirs(video_save_dir, exist_ok=True)
+output_path = os.path.join(video_save_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
+
 
 # For standard camera use "imx219.json"
 tuning = Picamera2.load_tuning_file("imx219.json")
 picam2 = Picamera2(tuning = tuning)
 
-config = picam2.create_video_configuration(main={"size": (1280, 720)})
+config = picam2.create_video_configuration(main={"size": (1280, 720),"format": 'RGB888'})
 picam2.configure(config)
-
 picam2.start_preview()
 time.sleep(2)  # Let the camera warm up
-
+fps = 30
+frame_size = (1280, 720)
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
+out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
 picam2.start()
 
 def init():
@@ -35,7 +44,7 @@ def init():
     green_obs = []
 
 def process_frame():
-    global hsv_frame, red_obs, green_obs, hsv_roi, corrected_frame
+    global hsv_frame, red_obs, green_obs, hsv_roi, frame
     # Create a mask to detect colour
     mask_red = cv2.inRange(hsv_roi, lower_red, upper_red)
     mask_green = cv2.inRange(hsv_roi, lower_green, upper_green)
@@ -63,15 +72,15 @@ def process_frame():
         y = item[0][1] + 350    #ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (0,255,0), 2)
+        cv2.rectangle(frame, (x,y), (x+w,y+h), (0,0,255), 2)
     for item in green_obs:
         x = item[0][0]
         y = item[0][1] + 350    # ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (0,255,0), 2)
+        cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
 
-    return corrected_frame, red_obs, green_obs
+    return frame, red_obs, green_obs
 
 def get_obstacle_positions(contours, obs):
     obs = []
@@ -81,12 +90,11 @@ def get_obstacle_positions(contours, obs):
     for cnt in contours:
         if cv2.contourArea(cnt) > min_area and cv2.contourArea(cnt) < max_area:
             x,y,w,h = cv2.boundingRect(cnt)
-            if h > w:              # Prevents parking walls being detected as obstacles in most orientations
+            if h*2 > w:              # Prevents parking walls being detected as obstacles in most orientations
                 # TODO when driving integration done; Second tuple gives grid pos
                 obs.append([(x,y,w,h), (0,0,0)])
             
     return obs
-
 
 def decide_path(red_obs, green_obs):
     # Needs to be updated
@@ -115,13 +123,13 @@ def nearest_obstacle():
     return nearest_obs
 
 def run():
-    global frame, hsv_frame, corrected_frame, hsv_roi
+    global frame, hsv_frame, hsv_roi, out
     while True:
         # Read a frame from the camera
         frame = picam2.capture_array()
-        corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        #corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # Convert the frame to HSV color space
-        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
+        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         hsv_roi = hsv_frame[350:715, 0:1280]        # Our region of interest is only the bottom half of the camera feed
 
         # Process camera frame for obstacles
@@ -131,18 +139,18 @@ def run():
         path_action = decide_path(red_obs, green_obs)
 
         # Show output
-        cv2.putText(frame_processed, f"Path: {path_action}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-
+        out.write(frame_processed)
+        cv2.putText(frame_processed, f"Path: {path_action}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)    
         cv2.imshow("Obstacle Detection", frame_processed)
         #cv2.imshow("Contours", corrected_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
+    
+    out.release()
     picam2.stop_preview()
     picam2.stop()
     cv2.destroyAllWindows()
-
 
 init()
 run()

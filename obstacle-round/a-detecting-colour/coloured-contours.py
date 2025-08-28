@@ -7,7 +7,7 @@ import time
 tuning = Picamera2.load_tuning_file("imx219.json")
 picam2 = Picamera2(tuning = tuning)
 
-config = picam2.create_video_configuration(main={"size": (1280, 720)})
+config = picam2.create_video_configuration(main={"size": (1280, 720),"format": 'RGB888'})
 picam2.configure(config)
 
 picam2.start_preview()
@@ -30,9 +30,9 @@ upper2_black = np.array([49, 175, 90])
 while True:
     # Read a frame from the camera
     frame = picam2.capture_array()
-    corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     # Convert the frame to HSV color space
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # Create a mask to detect colour
     mask_red = cv2.inRange(hsv_frame, lower_red, upper_red)
@@ -50,15 +50,15 @@ while True:
     black_contours, _ = cv2.findContours(mask_black, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Draw contours on respective masks and original image
-    cv2.drawContours(mask_red, red_contours, -1, (255,200,200), -1)
+    cv2.drawContours(mask_red, red_contours, -1, (200,200,255), -1)
     cv2.drawContours(mask_green, green_contours, -1, (200,255,200), -1)
     cv2.drawContours(mask_black, black_contours, -1, (200,200,255), -1)
-    cv2.drawContours(corrected_frame, red_contours, -1, (255,100,100), -1)
-    cv2.drawContours(corrected_frame, green_contours, -1, (100,255,100), -1)
-    cv2.drawContours(corrected_frame, black_contours, -1, (120,120,120), -1)
+    cv2.drawContours(frame, red_contours, -1, (100,100,255), -1)
+    cv2.drawContours(frame, green_contours, -1, (100,255,100), -1)
+    cv2.drawContours(frame, black_contours, -1, (120,120,120), -1)
 
     # Display the contour frames
-    cv2.imshow('Contour Detection', corrected_frame)
+    cv2.imshow('Contour Detection', frame)
     cv2.imshow('Colours', result)
     #cv2.imshow('Red Contours', mask_red)
     #cv2.imshow('Green Contours', mask_green)

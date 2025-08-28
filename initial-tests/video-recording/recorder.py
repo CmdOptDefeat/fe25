@@ -1,0 +1,34 @@
+import cv2
+from picamera2 import Picamera2
+import os
+
+# Setup
+video_save_dir = "initial-tests/video-recording/videos"
+os.makedirs(video_save_dir, exist_ok=True)
+output_path = os.path.join(video_save_dir, "video_test.mp4")
+
+# Initialize Pi Camera 3 Wide
+picam2 = Picamera2()
+video_config = picam2.create_video_configuration(main={"format": 'RGB888', "size": (1280, 720)})
+picam2.configure(video_config)
+picam2.start()
+
+# VideoWriter setup
+fps = 30
+frame_size = (1280, 720)
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
+out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
+
+try:
+    while True:
+        frame = picam2.capture_array()
+        out.write(frame)
+        cv2.imshow('Recording', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+except KeyboardInterrupt:
+    print("Recording stopped.")
+finally:
+    out.release()
+    picam2.stop()
+    cv2.destroyAllWindows()
