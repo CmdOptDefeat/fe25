@@ -16,11 +16,12 @@ public:
   void setStaticColor(RGBColor col) override;
   void limitBrightness(uint8_t lim) override;
 
-
+  // TODO: move colors to interface to standardize
   static const RGBColor RED;
   static const RGBColor GREEN;
   static const RGBColor BLUE;
   static const RGBColor AMBER;
+  static const RGBColor CYAN;
   static const RGBColor BLACK;
 
 private:

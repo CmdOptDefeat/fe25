@@ -66,3 +66,52 @@ String hw_rev_2_UARTLogger::_stringFromType(LogType type){
   return typeString;
 
 }
+
+void hw_rev_2_UARTLogger::addKillHandler(void (*funcptr)()){
+
+  _killCallback = funcptr;
+
+}
+
+void hw_rev_2_UARTLogger::addRebootHandler(void (*funcptr)()){
+
+  _rebootCallback = funcptr;
+
+}
+
+void hw_rev_2_UARTLogger::addBootselHandler(void (*funcptr)()){
+
+  _bootselCallback = funcptr;
+
+}
+
+void hw_rev_2_UARTLogger::handleInput(){
+
+  if(Serial1.available()){
+
+    String rawCommand = Serial1.readString();
+    sendMessage("hw_rev_2_UARTLogger::handleInput", INFO, "Received command " + rawCommand);
+
+    if(rawCommand  == "kill"){
+      sendMessage("hw_rev_2_UARTLogger::handleInput", INFO, "Parsed kill command");
+      if(_killCallback != nullptr){_killCallback();}
+      return;
+    }
+
+    if(rawCommand  == "reboot"){
+      sendMessage("hw_rev_2_UARTLogger::handleInput", INFO, "Parsed reboot command");
+      if(_rebootCallback != nullptr){_rebootCallback();}
+      return;
+    }
+
+    if(rawCommand  == "bootsel"){
+      sendMessage("hw_rev_2_UARTLogger::handleInput", INFO, "Parsed bootsel command");
+      if(_bootselCallback != nullptr){_bootselCallback();}
+      return;
+    }
+
+    sendMessage("hw_rev_2_UARTLogger::handleInput", INFO, "Unable to parse command " + rawCommand);    
+
+  }
+
+}

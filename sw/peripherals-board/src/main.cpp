@@ -40,6 +40,10 @@ void debugLogHeader();
 void debugLogDataCommand(VehicleData data, VehicleCommand cmd);
 void debugProbeI2CAddr(byte addr);
 void debugFailureBlink();
+void debugKillBlink();
+void debugKillCallback();
+void debugRebootCallback();
+void debugBootselCallback();
 
 /**
  * @brief Initialises sensor manager, target controller, and drive algorithm
@@ -47,6 +51,10 @@ void debugFailureBlink();
 void setup(){
 
   debugLogger.init();  
+  debugLogger.addKillHandler(debugKillCallback);
+  debugLogger.addBootselHandler(debugBootselCallback);
+  debugLogger.addRebootHandler(debugRebootCallback);
+  
   debugLogHeader();
 
   rgbLED.init(&debugLogger);
@@ -116,6 +124,8 @@ void setup(){
  * @brief Reads data from sensors, passes drive commands from drive algorithm/RPi/radio to target controller
  */
 void loop(){
+
+  debugLogger.handleInput();
 
   VehicleData vehicleData = sensorManager.update();
   vehicleData.roundDirectionCW = false;
@@ -305,5 +315,40 @@ void debugFailureBlink(){
   delay(100);
   rgbLED.setStaticColor(rgbLED.BLACK);
   delay(100);
+
+}
+
+
+void debugKillBlink(){
+
+  rgbLED.limitBrightness(50);
+  rgbLED.setStaticColor(rgbLED.CYAN);
+  delay(50);
+  rgbLED.setStaticColor(rgbLED.BLACK);
+  delay(1000);
+
+}
+
+void debugKillCallback(){
+
+  debugLogger.sendMessage("debugKillCallback", debugLogger.INFO, "Kill callback called. Entering safe state.");
+
+  motor.disarmMotor();
+
+  while(true){
+    debugKillBlink();
+  }
+
+}
+
+void debugRebootCallback(){
+
+  rp2040.reboot();
+
+}
+
+void debugBootselCallback(){
+
+  rp2040.rebootToBootloader();
 
 }
