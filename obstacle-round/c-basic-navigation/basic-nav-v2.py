@@ -1,69 +1,69 @@
-import cv2
+import cv2      #Import necessary libraries
 import numpy as np
 from picamera2 import Picamera2
-import time
-import serial
+import time, serial, logging, os
 import RPi.GPIO as GPIO
 from datetime import datetime
-import logging, os
 
-# Status LED
-LED = 17
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(LED, GPIO.OUT)
+if True:    # System setup
+    # Status LED
+    LED = 17
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(LED, GPIO.OUT)
 
-# Serial config
-# usb-Raspberry_Pi_Pico_E6625887D3859130-if00 - Pranav
-# usb-Raspberry_Pi_Pico_E6625887D3482132-if00 - Adbhut
-ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if00', 115200, timeout=1)
+    # Serial config
+    # usb-Raspberry_Pi_Pico_E6625887D3859130-if00 - Pranav
+    # usb-Raspberry_Pi_Pico_E6625887D3482132-if00 - Adbhut
+    ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if00', 115200, timeout=1)
 
-tuning = Picamera2.load_tuning_file("imx219.json")
-picam2 = Picamera2(tuning = tuning)
-config = picam2.create_video_configuration(main={"size": (1280, 720),"format": 'RGB888'})
+    tuning = Picamera2.load_tuning_file("imx219.json")
+    picam2 = Picamera2(tuning = tuning)
+    config = picam2.create_video_configuration(main={"size": (1280, 720),"format": 'RGB888'})
 
-log_dir = 'obstacle-round/c-basic-navigation/logs'
-now = datetime.now()
-log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
-log_path = os.path.join(log_dir, log_filename)
-# Configure logging to append mode
-logging.basicConfig(
-    filename=log_path,
-    filemode='a',  # Append mode
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+if True:    # Logging, video setup
+    log_dir = 'obstacle-round/c-basic-navigation/logs'
+    now = datetime.now()
+    log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+    log_path = os.path.join(log_dir, log_filename)
+    # Configure logging to append mode
+    logging.basicConfig(
+        filename=log_path,
+        filemode='a',  # Append mode
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
-video_dir = "obstacle-round/c-basic-navigation/videos"
-os.makedirs(video_dir, exist_ok=True)
-output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
+    video_dir = "obstacle-round/c-basic-navigation/videos"
+    os.makedirs(video_dir, exist_ok=True)
+    output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
 
-fps = 30
-frame_size = (1280, 720)
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
-video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
-print("Created log file, initialised video")
+    fps = 30
+    frame_size = (1280, 720)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
+    video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
+    print("Created log file, initialised video")
 
-# Declaring some global variables
-yaw, target_yaw, total_error= 0, 0, 0
-distance, start_dist = 0, 0
-front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-turns, turning = 1, False
+if True:    # Declaring variables
+    yaw, target_yaw, total_error= 0, 0, 0
+    distance, start_dist = 0, 0
+    front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
+    turns, turning = 1, False
 
-#Define colour ranges
-lower_red = np.array([0, 120, 88])
-upper_red = np.array([10, 255, 255])
-lower_green = np.array([52, 120, 78])
-upper_green = np.array([70, 255, 255])
-lower1_black = np.array([37, 65, 20])
-upper1_black = np.array([65, 130, 60])
-lower2_black = np.array([40, 130, 50])
-upper2_black = np.array([49, 175, 90])
-# The pink parking pieces also show up as red at home!
+    #Define colour ranges
+    lower_red = np.array([0, 120, 88])
+    upper_red = np.array([10, 255, 255])
+    lower_green = np.array([52, 120, 78])
+    upper_green = np.array([70, 255, 255])
+    lower1_black = np.array([37, 65, 20])
+    upper1_black = np.array([65, 130, 60])
+    lower2_black = np.array([40, 130, 50])
+    upper2_black = np.array([49, 175, 90])
+    # The pink parking pieces also show up as red at home!
 
-# These are currently seen obstacles
-red_obs = []
-green_obs = []
-prev_obs = [(0,0,0,0),'']
+    # These are currently seen obstacles
+    red_obs = []
+    green_obs = []
+    prev_obs = [(0,0,0,0),'']
 
 def led(duration=1.5):
     GPIO.output(LED, GPIO.HIGH)
