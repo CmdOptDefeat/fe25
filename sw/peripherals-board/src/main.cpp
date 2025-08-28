@@ -25,6 +25,7 @@ VEHICLE_DRIVER_STEERING steering(VEHICLE_GET_CONFIG);
 VEHICLE_DRIVER_TARGET_CONTROL targetControl(VEHICLE_GET_CONFIG);
 VEHICLE_DRIVER_OPEN_ROUND_ALGORITHM openRoundAlgorithm(VEHICLE_GET_CONFIG);
 VEHICLE_DRIVER_UNPARK_ALGORITHM unparkAlgorithm(VEHICLE_GET_CONFIG);
+VEHICLE_DRIVER_PARK_ALGORITHM parkAlgorithm(VEHICLE_GET_CONFIG);
 VEHICLE_DRIVER_REMOTE_COMMUNICATION remoteCommunication(VEHICLE_GET_CONFIG);
 VEHICLE_DRIVER_SERIAL_COMMUNICATION serialCommunication(VEHICLE_GET_CONFIG);
 //VEHICLE_DRIVER_ROS_COMMUNICATION rosCommunication(VEHICLE_GET_CONFIG);
@@ -39,9 +40,6 @@ void debugLogHeader();
 void debugLogDataCommand(VehicleData data, VehicleCommand cmd);
 void debugProbeI2CAddr(byte addr);
 void debugFailureBlink();
-
-hw_rev_2_Park park(VEHICLE_GET_CONFIG);
-
 
 /**
  * @brief Initialises sensor manager, target controller, and drive algorithm
@@ -72,6 +70,7 @@ void setup(){
   sensorManager.init(&debugLogger);
 
   unparkAlgorithm.init(&debugLogger);
+  parkAlgorithm.init(&debugLogger);
 
   if(!sensorManager.addSensor(&bno)){
 
@@ -119,11 +118,12 @@ void setup(){
 void loop(){
 
   VehicleData vehicleData = sensorManager.update();
+  vehicleData.roundDirectionCW = false;
 
   remoteCommunication.update(vehicleData, activeDriveCommand);    // Send data over nRF24L01+, ignore any commands from telemetry module
   VehicleCommand serialCommunicationCommand = serialCommunication.update(vehicleData, activeDriveCommand);
 
-  activeDriveCommand = unparkAlgorithm.drive(vehicleData);
+  activeDriveCommand = parkAlgorithm.drive(vehicleData);
 
   targetControl.directControl(activeDriveCommand, vehicleData);
 
