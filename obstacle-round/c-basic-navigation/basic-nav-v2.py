@@ -81,13 +81,16 @@ def drive_data(motor_speed,servo_steering):
     # Wait for response from RP2040
     response = ser.readline().decode().strip()
     values = response.split(",")
-    yaw = float(values[0])
-    distance = -float(values[14]) / 42
+    values.pop()
+    for index in range(0,len(values)): 
+        if values[index]!='': values[index] = float(values[index])
+    logging.info(values)    # Logging
+    yaw = values[0]
+    distance = -values[14] / 42
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
-    logging.info(values)        # Logging
 
 def forward(speed,steering, target_dist, stop=False):
     global distance
@@ -219,9 +222,9 @@ def run():
         print(f"Steering: {steering}")
 
         # Camera feed and analysis display
-        video_out.write(frame_processed)
         cv2.putText(frame_processed, f"Speed {speed} Steering {steering}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
         cv2.imshow("Obstacle Detection", frame_processed)
+        video_out.write(frame_processed)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):   # Manual kill switch
             break

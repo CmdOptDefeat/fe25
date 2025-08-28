@@ -1,5 +1,5 @@
 '''
-This programs starts from where the basic-nav-v2 program ends, i.e start of turn, and ensure the robott completes the turn upto crossing the obstacle markers nearest to the turn
+This programs starts from where the basic-nav-v2 program ends, i.e start of turn, and ensure the robot completes the turn upto crossing the obstacle markers nearest to the turn
 '''
 
 import cv2
@@ -11,18 +11,6 @@ import RPi.GPIO as GPIO
 from datetime import datetime
 import logging, os
 
-log_dir = 'obstacle-round/e-turning-for-obstacles/logs'
-now = datetime.now()
-log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
-log_path = os.path.join(log_dir, log_filename)
-# Configure logging to append mode
-logging.basicConfig(
-    filename=log_path,
-    filemode='a',  # Append mode
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-print("Created log file")
 # Status LED
 LED = 17
 GPIO.setmode(GPIO.BCM)
@@ -35,32 +23,56 @@ ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if
 
 tuning = Picamera2.load_tuning_file("imx219.json")
 picam2 = Picamera2(tuning = tuning)
-
 config = picam2.create_video_configuration(main={"size": (1280, 720)})
 
-# Declaring some global variables
-yaw, target_yaw, total_error= 0, 0, 0
-distance, start_dist = 0, 0
-front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-turn_dir, turns, turning = 1, 0, False  # 1:Clockwise; -1:Anticlockwise
+log_dir = 'obstacle-round/e-turning-for-obstacles/logs'
+now = datetime.now()
+log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+log_path = os.path.join(log_dir, log_filename)
+# Configure logging to append mode
+logging.basicConfig(
+    filename=log_path,
+    filemode='a',  # Append mode
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
-#Define colour ranges
-lower_red = np.array([0, 120, 88])
-upper_red = np.array([10, 255, 255])
-lower_green = np.array([52, 120, 78])
-upper_green = np.array([70, 255, 255])
-lower1_black = np.array([37, 65, 20])
-upper1_black = np.array([65, 130, 60])
-lower2_black = np.array([40, 130, 50])
-upper2_black = np.array([49, 175, 90])
-# The pink parking pieces also show up as red at home!
+video_dir = "obstacle-round/e-turning-for-obstacles/videos"
+os.makedirs(video_dir, exist_ok=True)
+output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
 
-start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
+fps = 20
+frame_size = (1280, 720)
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
+video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
+print("\n\nCreated log file, initialised video\n\n")
 
-# These are currently seen obstacles
-red_obs = []
-green_obs = []
-prev_obs = [(0,0,0,0),'']
+picam2.configure(config)
+picam2.start_preview()
+
+if True:# Declaring some global variables
+    yaw, target_yaw, total_error= 0, 0, 0
+    distance, start_dist = 0, 0
+    front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
+    turn_dir, turns, turning = 1, 0, False  # 1:Clockwise; -1:Anticlockwise
+
+    #Define colour ranges
+    lower_red = np.array([0, 120, 88])
+    upper_red = np.array([10, 255, 255])
+    lower_green = np.array([52, 120, 78])
+    upper_green = np.array([70, 255, 255])
+    lower1_black = np.array([37, 65, 20])
+    upper1_black = np.array([65, 130, 60])
+    lower2_black = np.array([40, 130, 50])
+    upper2_black = np.array([49, 175, 90])
+    # The pink parking pieces also show up as red at home!
+
+    start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
+
+    # These are currently seen obstacles
+    red_obs = []
+    green_obs = []
+    prev_obs = [(0,0,0,0),'']
 
 def led(duration=1.5):
     GPIO.output(LED, GPIO.HIGH)
@@ -79,13 +91,16 @@ def drive_data(motor_speed,servo_steering):
     # Wait for response from RP2040
     response = ser.readline().decode().strip()
     values = response.split(",")
-    yaw = float(values[0])
-    distance = -float(values[14]) / 29.5
+    values.pop()
+    for index in range(0,len(values)): 
+        if values[index]!='': values[index] = float(values[index])
+    logging.info(values)    # Logging
+    yaw = values[0]
+    distance = -values[14] / 42
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
-    logging.info(values)
 
 def forward(speed,steering, target_dist, stop=False):
     global distance
@@ -104,7 +119,7 @@ def backward(speed,steering, target_dist, stop=False):
     if stop: drive_data(0,steering)
 
 def process_frame():
-    global hsv_frame, red_obs, green_obs, hsv_roi, corrected_frame
+    global hsv_frame, red_obs, green_obs, hsv_roi, frame
     mask_red = cv2.inRange(hsv_roi, lower_red, upper_red)
     mask_green = cv2.inRange(hsv_roi, lower_green, upper_green)
     
@@ -121,15 +136,15 @@ def process_frame():
         y = item[0][1] + 350    #ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (100,100,255), 2)
+        cv2.rectangle(frame, (x,y), (x+w,y+h), (100,100,255), 2)
     for item in green_obs:
         x = item[0][0]
         y = item[0][1] + 350    # ROI was cropped
         w = item[0][2]
         h = item[0][3]
-        cv2.rectangle(corrected_frame, (x,y), (x+w,y+h), (100,255,100), 2)
+        cv2.rectangle(frame, (x,y), (x+w,y+h), (100,255,100), 2)
 
-    return corrected_frame, red_obs, green_obs
+    return frame, red_obs, green_obs
 
 def get_obstacle_positions(contours, obs):
     obs = []
@@ -177,7 +192,7 @@ def decide_turn_path():
     global prev_obs
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
-    speed = 200
+    speed = 0
     steering = 90
     path = 'Straight'
     x = current_obs[0][0]
@@ -225,13 +240,13 @@ def decide_turn_path():
     return path, speed, steering
 
 def run():
-    global frame, hsv_frame, corrected_frame, hsv_roi
+    global frame, hsv_frame, video_out, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
     if front_dist < 95: backward(200,90,100-front_dist,True)
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
-        corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
-        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)  # Convert  frame to HSV format
+        #corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
+        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # Convert  frame to HSV format
         hsv_roi = hsv_frame[350:720, 0:1280]        # Region of interest is only the bottom half
         
         frame_processed, red_obs, green_obs = process_frame() # Process frame for obstacles
@@ -240,28 +255,28 @@ def run():
         path_action, speed, steering = decide_turn_path()
         if (distance - start_dist) > 175: break # Stop after turn
 
-        drive_data(speed, steering)
-        print(f"Steering: {steering}")
-
         # Camera feed and analysis display
         cv2.putText(frame_processed, f"Speed {speed} Steering {steering}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
         cv2.imshow("Obstacle Detection", frame_processed)
+        video_out.write(frame_processed)
+
+        drive_data(speed, steering)
+        print(f"Steering: {steering}")
 
         if cv2.waitKey(1) & 0xFF == ord('q'):   # Manual kill switch
             break
 
 try:
-    picam2.configure(config)
-    picam2.start_preview()
     led()
     picam2.start()
     drive_data(0,90)
     start_dist = distance
     turning = True
-    #run()
+    run()
 
 finally:
     drive_data(0,90)            # Stop robot
+    video_out.release()
     picam2.stop_preview()       # Close camera
     picam2.stop()
     cv2.destroyAllWindows()
