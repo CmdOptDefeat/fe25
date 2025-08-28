@@ -208,7 +208,6 @@ def run():
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
-        #corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # Convert  frame to HSV format
         hsv_roi = hsv_frame[350:720, 0:1280]        # Region of interest is only the bottom half
         
