@@ -3,9 +3,9 @@ from picamera2 import Picamera2
 import os
 
 # Setup
-save_dir = "initial-tests/video-recording/videos"
-os.makedirs(save_dir, exist_ok=True)
-output_path = os.path.join(save_dir, "video_test.mp4")
+video_save_dir = "initial-tests/video-recording/videos"
+os.makedirs(video_save_dir, exist_ok=True)
+output_path = os.path.join(video_save_dir, "video_test.mp4")
 
 # Initialize Pi Camera 3 Wide
 picam2 = Picamera2()
