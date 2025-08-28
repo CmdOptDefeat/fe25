@@ -47,7 +47,7 @@ print("Created log file, initialised video")
 yaw, target_yaw, total_error= 0, 0, 0
 distance, start_dist = 0, 0
 front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-turns, turning = 0, False
+turns, turning = 1, False
 
 #Define colour ranges
 lower_red = np.array([0, 120, 88])
@@ -174,7 +174,7 @@ def decide_path():
     global prev_obs
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
-    speed = 0
+    speed = 200
     steering = 90
     x = current_obs[0][0]
     y = current_obs[0][1]
@@ -192,7 +192,7 @@ def decide_path():
         elif error < -180: error = error + 360
         total_error += error
         if error > 0: correction = error * 2.5 - total_error * 0.001    #right
-        elif error < 0: correction = error * 3.6 - total_error * 0.0015 - 5  #left
+        elif error < 0: correction = error * 3.3 - total_error * 0.0012 - 2  #left
         print(error)
         steering = 90 + correction 
         steering = min(max(35,steering),127)       #  Limit PID steering

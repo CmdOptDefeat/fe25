@@ -23,7 +23,7 @@ ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if
 
 tuning = Picamera2.load_tuning_file("imx219.json")
 picam2 = Picamera2(tuning = tuning)
-config = picam2.create_video_configuration(main={"size": (1280, 720)})
+config = picam2.create_video_configuration(main={"size": (1280, 720), "format": 'RGB888'})
 
 log_dir = 'obstacle-round/e-turning-for-obstacles/logs'
 now = datetime.now()
@@ -54,7 +54,7 @@ picam2.start_preview()
 yaw, target_yaw, total_error= 0, 0, 0
 distance, start_dist = 0, 0
 front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-turn_dir, turns, turning, turn_forward = 1, 0, False, 0  # 1:Clockwise; -1:Anticlockwise
+turn_dir, turns, prev_turns, turning, turn_forward = 1, 0, 0, False, 0  # 1:Clockwise; -1:Anticlockwise
 
 #Define colour ranges
 lower_red = np.array([0, 120, 88])
@@ -73,6 +73,8 @@ start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
 red_obs = []
 green_obs = []
 prev_obs = [(0,0,0,0),'']
+prev_steering = 90
+turn_obs = [(0,0,0,0),'']
 
 def led(duration=1.5):
     GPIO.output(LED, GPIO.HIGH)
@@ -188,19 +190,20 @@ def decide_turn_path():
     # Start a tight turn, after around 30° check:
     # If red obstacle detected drive to ots right
     # If green obstacle detected drive to its right 
-    global yaw, total_error, turns, turning
-    global prev_obs
+    global yaw, total_error, turns, turning, turn_obs
+    global prev_obs, turn_forward, prev_steering, prev_turns
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
     speed = 200
-    steering = 90
+    steering = prev_steering
     path = 'Straight'
     x = current_obs[0][0]
     y = current_obs[0][1]
     w = current_obs[0][2]
     h = current_obs[0][3]
     colour = current_obs[1]
-    target_yaw = (turn_dir*(turns+1)*90 + 360) % 360
+    if turning:target_yaw = (turn_dir*(turns+1)*90 + 360) % 360
+    else: target_yaw = (turn_dir*turns*90 + 360) % 360
     error = target_yaw - yaw
     if error > 180: error = error - 360
     elif error < -180: error = error + 360
@@ -209,9 +212,11 @@ def decide_turn_path():
         if abs(error) > 80 and turning:
             if turn_dir == 1: steering = 145
             elif turn_dir == -1: steering = 10
+            speed = 190
         elif abs(error) > 48 and turning:
             if turn_dir == 1: steering = 155
-            elif turn_dir == -1: steering = 3    
+            elif turn_dir == -1: steering = 3
+            speed = 190    
         elif colour == 'green' and y > 40 and x < 1260: 
             path = 'LEFT'
             steering -= (1200-x) * 0.09
@@ -220,36 +225,52 @@ def decide_turn_path():
             steering += x*0.08
         else:
             steering = pi_control(error)    
-        if abs(error) < 15 and turning: 
+        if abs(error) < 20 and turning: 
             turning = False
             turns += 1
     elif start_pos == 'inner':
-        if colour == 'red' and turning:
-            if turn_forward == 0: turn_forward = 1
-            if turn_dir == -1 and turn_forward == 1: forward(200,90,50,True)
-            turn_forward = 2
-            if turn_dir == 1: steering = 152
-            else: steering = 5
-        elif colour == 'green' and turning:
-            if turn_forward == 0: turn_forward = 1
-            if turn_dir == 1 and turn_forward == 1: forward(200,90,50,True)
-            turn_forward = 2
-            if turn_dir == 1: steering = 152
-            else: steering = 5
-        else:
+        if turn_obs[1] == '' and colour != '': turn_obs = current_obs
+        if turn_obs[1] == 'red' and turning:
+            if turn_dir == -1:
+                if turn_forward == 0: 
+                    turn_forward = 1
+                    steering = 149
+                if turn_forward == 1 and abs(90-error)>20: 
+                    steering = 3
+                    turn_forward = 2
+            elif turn_dir == 1: steering = 156
+        elif turn_obs[1] == 'green' and turning:
+            if turn_dir == 1:
+                if turn_forward == 0: 
+                    turn_forward = 1
+                    steering = 15
+                if turn_forward == 1 and abs(error-90)>20: 
+                    steering = 155
+                    turn_forward = 2
+            elif turn_dir == -1: steering = 3
+        elif not turning:
             steering = pi_control(error)
-        if abs(error) < 15 and turning: 
+
+        if turning and abs(error)<10: 
             turning = False
+            turn_forward = 0
             turns += 1
 
+        if prev_turns < turns:
+            print("\n\n\nGoing back post turn\n\n\n") 
+            backward(225,90,13,True)
+            logging.info("Going back")
+    print(turn_forward)
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed!\n\n\n")
     prev_obs = current_obs
+    prev_steering = steering
+    prev_turns = turns
     return path, speed, steering
 
 def run():
     global frame, hsv_frame, video_out, hsv_roi
-    global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
+    global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist, prev_turns
     if front_dist < 95: backward(200,90,97-front_dist,True)
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
@@ -260,8 +281,8 @@ def run():
 
         # Decide navigation based on obstacle detection
         path_action, speed, steering = decide_turn_path()
-        if (distance - start_dist) > 175: break # Stop after turn
-
+        #if (distance - start_dist) > 125: break # Stop after turn
+        if prev_turns == 1: break
         # Camera feed and analysis display
         cv2.putText(frame_processed, f"Speed {speed} Steering {steering}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 2)
         cv2.imshow("Obstacle Detection", frame_processed)
