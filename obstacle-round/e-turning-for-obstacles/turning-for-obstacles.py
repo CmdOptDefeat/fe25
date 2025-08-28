@@ -50,29 +50,29 @@ print("\n\nCreated log file, initialised video\n\n")
 picam2.configure(config)
 picam2.start_preview()
 
-if True:# Declaring some global variables
-    yaw, target_yaw, total_error= 0, 0, 0
-    distance, start_dist = 0, 0
-    front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-    turn_dir, turns, turning = 1, 0, False  # 1:Clockwise; -1:Anticlockwise
+# Declaring some global variables
+yaw, target_yaw, total_error= 0, 0, 0
+distance, start_dist = 0, 0
+front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
+turn_dir, turns, turning, turn_forward = 1, 0, False, 0  # 1:Clockwise; -1:Anticlockwise
 
-    #Define colour ranges
-    lower_red = np.array([0, 120, 88])
-    upper_red = np.array([10, 255, 255])
-    lower_green = np.array([52, 120, 78])
-    upper_green = np.array([70, 255, 255])
-    lower1_black = np.array([37, 65, 20])
-    upper1_black = np.array([65, 130, 60])
-    lower2_black = np.array([40, 130, 50])
-    upper2_black = np.array([49, 175, 90])
-    # The pink parking pieces also show up as red at home!
+#Define colour ranges
+lower_red = np.array([0, 120, 88])
+upper_red = np.array([10, 255, 255])
+lower_green = np.array([52, 120, 78])
+upper_green = np.array([70, 255, 255])
+lower1_black = np.array([37, 65, 20])
+upper1_black = np.array([65, 130, 60])
+lower2_black = np.array([40, 130, 50])
+upper2_black = np.array([49, 175, 90])
+# The pink parking pieces also show up as red at home!
 
-    start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
+start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
 
-    # These are currently seen obstacles
-    red_obs = []
-    green_obs = []
-    prev_obs = [(0,0,0,0),'']
+# These are currently seen obstacles
+red_obs = []
+green_obs = []
+prev_obs = [(0,0,0,0),'']
 
 def led(duration=1.5):
     GPIO.output(LED, GPIO.HIGH)
@@ -154,7 +154,7 @@ def get_obstacle_positions(contours, obs):
     for cnt in contours:
         if cv2.contourArea(cnt) > min_area and cv2.contourArea(cnt) < max_area:
             x,y,w,h = cv2.boundingRect(cnt)
-            if h*1.2 > w or (y > 140 and abs(1200-x) < 250 and h > 100):
+            if h*2 > w or (y > 140 and abs(1200-x) < 250 and h > 100):
                 # TODO when driving integration done
                 obs.append([(x,y,w,h), (0,0)])
     return obs
@@ -192,7 +192,7 @@ def decide_turn_path():
     global prev_obs
     current_obs = nearest_obstacle()
     print(f'The current obstacle to tackle is {current_obs}')
-    speed = 0
+    speed = 200
     steering = 90
     path = 'Straight'
     x = current_obs[0][0]
@@ -225,27 +225,34 @@ def decide_turn_path():
             turns += 1
     elif start_pos == 'inner':
         if colour == 'red' and turning:
-            pass
+            if turn_forward == 0: turn_forward = 1
+            if turn_dir == -1 and turn_forward == 1: forward(200,90,50,True)
+            turn_forward = 2
+            if turn_dir == 1: steering = 152
+            else: steering = 5
         elif colour == 'green' and turning:
-            pass
+            if turn_forward == 0: turn_forward = 1
+            if turn_dir == 1 and turn_forward == 1: forward(200,90,50,True)
+            turn_forward = 2
+            if turn_dir == 1: steering = 152
+            else: steering = 5
         else:
-            pass
+            steering = pi_control(error)
         if abs(error) < 15 and turning: 
             turning = False
             turns += 1
 
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
-        print("\n\n\n\tObstacle passed\n\n\n")
+        print("\n\n\n\tObstacle passed!\n\n\n")
     prev_obs = current_obs
     return path, speed, steering
 
 def run():
     global frame, hsv_frame, video_out, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist
-    if front_dist < 95: backward(200,90,100-front_dist,True)
+    if front_dist < 95: backward(200,90,97-front_dist,True)
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
-        #corrected_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # Convert  frame to HSV format
         hsv_roi = hsv_frame[350:720, 0:1280]        # Region of interest is only the bottom half
         
