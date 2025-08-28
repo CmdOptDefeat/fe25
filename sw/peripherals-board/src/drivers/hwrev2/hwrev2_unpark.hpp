@@ -24,6 +24,7 @@ public:
   void init(ILogger *logger) override;
   VehicleCommand drive(VehicleData data) override;
   bool isDirectControl() override {return true;}
+  bool isFinished() override;
   void _findRoundDir();
   void _turn0();
   void _turn1();

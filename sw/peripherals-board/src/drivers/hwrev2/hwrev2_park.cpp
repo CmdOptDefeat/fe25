@@ -172,6 +172,7 @@ void hw_rev_2_ParkAlgorithm::_straightenOut(){
     
     _cmd.targetSpeed = 0;
     _cmd.targetYaw = 90;
+    _state = STOP;
     return;
 
   }
@@ -182,6 +183,7 @@ void hw_rev_2_ParkAlgorithm::_straightenOut(){
 
       _cmd.targetSpeed = 0;
       _cmd.targetYaw = 90;
+      _state = STOP;
       return;
 
     }
@@ -193,6 +195,7 @@ void hw_rev_2_ParkAlgorithm::_straightenOut(){
 
       _cmd.targetSpeed = 0;
       _cmd.targetYaw = 90;
+      _state = STOP;
       return;
 
     }
@@ -204,4 +207,8 @@ void hw_rev_2_ParkAlgorithm::_straightenOut(){
 
 }
 
-// <= 180
+bool hw_rev_2_ParkAlgorithm::isFinished(){
+
+  return _state == STOP;
+
+}

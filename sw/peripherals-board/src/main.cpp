@@ -37,8 +37,31 @@ VEHICLE_DRIVER_RGB_LED rgbLED(VEHICLE_GET_CONFIG);
 SensorManager sensorManager(VEHICLE_GET_CONFIG);
 
 
-VehicleCommand activeDriveCommand;
+enum CoreControlState{
 
+  GET_ORIENTATION,
+  UNPARK,
+  DRIVE_FROM_PI,
+  PARK,
+  SAFE
+
+};
+
+VehicleCommand coreVehicleCommand;
+VehicleCommand coreSerialCommand;
+VehicleData coreVehicleData;
+VehicleInstruction coreVehicleInstructionToPi;
+VehicleInstruction coreVehicleInstructionFromPi;
+CoreControlState coreControlState;
+bool coreRoundDirCW;
+
+void coreGetOrientation();
+void coreUnpark();
+void coreDriveFromPi();
+void corePark();
+void coreSafe();
+void coreOpenRound();
+void coreRunStateMachine();
 
 
 void debugPrintVehicleData(VehicleData data, VehicleCommand cmd);
@@ -124,26 +147,40 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
+  coreControlState = GET_ORIENTATION;
+
 }
 
 /**
- * @brief Reads data from sensors, passes drive commands from drive algorithm/RPi/radio to target controller
+ * @brief Reads data from sensors, runs state machine, commands output devices
+ * @author DIY Labs
+ * @note Consider removing debug updates to save loop time for competition, probably not required
  */
 void loop(){
 
+  // Handle any serial input over debug port (disable for competition compile?)
   debugLogger.handleInput();
 
-  VehicleData vehicleData = sensorManager.update();
-  vehicleData.roundDirectionCW = false;
+  // Get fresh data from sensors (manually set round direction bool based on what we've found out before)
+  coreVehicleData = sensorManager.update();
+  coreVehicleData.roundDirectionCW = coreRoundDirCW;
+  coreVehicleData.instruction = coreVehicleInstructionToPi;
 
-  remoteCommunication.update(vehicleData, activeDriveCommand);    // Send data over nRF24L01+, ignore any commands from telemetry module
-  VehicleCommand serialCommunicationCommand = serialCommunication.update(vehicleData, activeDriveCommand);
+  // Update state machine
+  coreRunStateMachine();
 
-  activeDriveCommand = parkAlgorithm.drive(vehicleData);
+  // Command motors and steering (fixed to directControl regardless of drive command's isDirectControl return; hack since all algorithms written assume direct output)
+  targetControl.directControl(coreVehicleCommand, coreVehicleData);
 
-  targetControl.directControl(activeDriveCommand, vehicleData);
+  // Log latest data and drive commands over debug serial port
+  debugLogDataCommand(coreVehicleData, coreVehicleCommand);
 
-  debugLogDataCommand(vehicleData, activeDriveCommand);
+  // Send latest data and drive commands over nRF24L01+ radio; not using any commands the telemetry adapter sends
+  remoteCommunication.update(coreVehicleData, coreVehicleCommand); 
+
+  // Update RPi on communication, set core instruction
+  coreSerialCommand = serialCommunication.update(coreVehicleData, coreVehicleCommand);
+  coreSerialCommand.instruction = coreVehicleInstructionFromPi;
 
 }
 
@@ -339,7 +376,7 @@ void debugKillCallback(){
 
   debugLogger.sendMessage("debugKillCallback", debugLogger.INFO, "Kill callback called. Entering safe state.");
 
-  motor.disarmMotor();
+  coreSafe();
 
   while(true){
     debugKillBlink();
@@ -358,3 +395,114 @@ void debugBootselCallback(){
   rp2040.rebootToBootloader();
 
 }
+
+void coreGetOrientation(){
+
+  uint16_t leftDist = coreVehicleData.lidar[270];
+  uint16_t rightDist = coreVehicleData.lidar[90];
+
+  coreRoundDirCW = rightDist > leftDist;
+
+  coreControlState = UNPARK;  // Move on to unparking after figuring out direction
+
+  debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "Set coreRoundDirCW to " + String(coreRoundDirCW ? "true" : "false"));  // not sure why +ing a set string and a ternary returns only the ternary eval, wrapping ternary in String() fixes it
+
+}
+
+void coreUnpark(){
+
+  if(unparkAlgorithm.isFinished()){
+    
+    coreControlState = DRIVE_FROM_PI;
+    return;
+
+  }
+
+  coreVehicleCommand = unparkAlgorithm.drive(coreVehicleData);
+
+}
+
+void coreDriveFromPi(){
+
+  if(coreSerialCommand.instruction == RPI_RP2040_START_PARKING){
+    
+    coreControlState = PARK;
+    return;
+
+  }
+
+  coreVehicleInstructionToPi = RP2040_RPI_START_OBSTACLE_NAVIGATION;
+  coreVehicleCommand.targetSpeed = coreSerialCommand.targetSpeed;
+  coreVehicleCommand.targetYaw = coreSerialCommand.targetYaw;
+
+}
+
+void corePark(){
+
+  if(parkAlgorithm.isFinished()){
+
+    coreControlState = SAFE;
+    return;
+
+  }
+
+  coreVehicleCommand = unparkAlgorithm.drive(coreVehicleData);
+
+}
+
+void coreSafe(){
+
+  motor.driveMotor(0, false);
+  motor.disarmMotor();
+  steering.steer(90);
+
+}
+
+void coreOpenRound(){
+
+  coreVehicleCommand = openRoundAlgorithm.drive(coreVehicleData);
+
+}
+
+void coreRunStateMachine(){
+
+  switch(coreControlState){
+
+    case GET_ORIENTATION:
+      coreGetOrientation();
+      break;
+
+    case UNPARK:
+      coreUnpark();
+      break;
+
+    case DRIVE_FROM_PI:
+      coreDriveFromPi();
+      break;
+
+    case PARK:
+      corePark();
+      break;
+
+    case SAFE:
+      coreSafe();
+      break;
+
+    default:
+      coreSafe();   // Something has gone terribly wrong if we didn't match with any of the cases before us, so STOP!
+      break;
+
+  };
+
+}
+
+/*
+enum CoreControlState{
+
+  GET_ORIENTATION,
+  UNPARK,
+  DRIVE_FROM_PI,
+  PARK,
+  SAFE
+
+}; */

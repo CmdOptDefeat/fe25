@@ -12,6 +12,7 @@ public:
   void init(ILogger *logger) override;
   VehicleCommand drive(VehicleData data) override;
   bool isDirectControl() override {return true;}
+  bool isFinished() override;
 
   enum hw_rev_2_park_state{
 
@@ -20,7 +21,8 @@ public:
     STRAIGHT1,
     STRAIGHT2,
     TURN1,
-    STRAIGHTEN_OUT
+    STRAIGHTEN_OUT,
+    STOP
   
   };
 

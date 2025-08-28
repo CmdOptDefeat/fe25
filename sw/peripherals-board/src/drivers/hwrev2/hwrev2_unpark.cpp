@@ -9,14 +9,15 @@ hw_rev_2_UnparkAlgorithm::hw_rev_2_UnparkAlgorithm(VehicleConfig cfg){
 void hw_rev_2_UnparkAlgorithm::init(ILogger *logger){
 
   _logger = logger;
-  _state = FIND_ROUND_DIRECTION;
+  _state = TURN0;   // round direction is figured out by main, so skip FIND_ROUND_DIRECTION
 
 }
 
 VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data){
 
   _data = data;
-
+  _roundDirCW = _data.roundDirectionCW;   // driver was written before round dir field was added
+                                          // to main, set private round dir variable
   switch(_state){
 
     case FIND_ROUND_DIRECTION:
@@ -218,3 +219,8 @@ void hw_rev_2_UnparkAlgorithm::_turn4(){
 
 }
 
+bool hw_rev_2_UnparkAlgorithm::isFinished(){
+
+  return _state == STOP;
+
+}

@@ -16,7 +16,8 @@ public:
     hw_rev_2_SingleLidarOpenRound(VehicleConfig cfg);
     void init(ILogger* logger) override;
     VehicleCommand drive(VehicleData vehicleData) override;
-    bool isDirectControl() override { return true; }
+    bool isDirectControl() override {return true;}
+    bool isFinished() override {return true;}       // THIS IS VERY BAD AND WILL BREAK AT THE SLIGHTEST TOUCH
 
 private:
     VehicleConfig _config;
