@@ -56,8 +56,8 @@ if True:    # Variable declarations
     #Define colour ranges
     lower_red = np.array([0, 120, 88])
     upper_red = np.array([10, 255, 255])
-    lower_green = np.array([52, 120, 78])
-    upper_green = np.array([70, 255, 255])
+    lower_green = np.array([62, 120, 78])
+    upper_green = np.array([71, 255, 255])
     lower1_black = np.array([37, 65, 20])
     upper1_black = np.array([65, 130, 60])
     lower2_black = np.array([40, 130, 50])
@@ -95,7 +95,7 @@ def drive_data(motor_speed,servo_steering):
         if values[index]!='': values[index] = float(values[index])
     logging.info(values)    # Logging
     yaw = values[0]
-    distance = -values[14] / 42
+    distance = -round(values[14]/42, 1)
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
@@ -182,7 +182,7 @@ def pi_control(error):
     elif error < 0: correction = error * 3.3 - total_error * 0.0013 - 2  #left
     print(error)
     steering = 90 + correction 
-    steering = min(max(35,steering),127)       #  Limit PID steering
+    steering = min(max(30,steering),145)       #  Limit PID steering
     print("PI Straight")
     return steering
 
@@ -239,7 +239,7 @@ def decide_turn_path():
                 if turn_forward == 1 and abs(90-error)>20: 
                     steering = 3
                     turn_forward = 2
-            elif turn_dir == 1: steering = 156
+            elif turn_dir == 1: steering = 165
         elif turn_obs[1] == 'green' and turning:
             if turn_dir == 1:
                 if turn_forward == 0: 
@@ -261,18 +261,19 @@ def decide_turn_path():
             turns += 1
             logging.info("Turn completed")
             print("\n\n\tTurn completed\n")
-            turn_obs = [(0,0,0,0),'']
 
         # Go back if had to turn closer to inner wall and need to change lanes again due to different colour
-        if prev_turns < turns and current_obs[1] != turn_obs[1] and current_obs[1] != '' and turn_obs[1] != '' and start_pos == 'inner':
-            print("\n\tGoing back post turn\n\n") 
-            backward(225,90,13,True)
-            logging.info("Going back")
-        else:
-            print("\n\tNo need to go back post turn completion\n\n") 
-            logging.info("Not going back")
+        if prev_turns < turns:
+            if current_obs[1] != turn_obs[1] and current_obs[1] != '' and turn_obs[1] != '':
+                print("\n\tGoing back post turn\n\n") 
+                backward(225,90,13,True)
+                logging.info("Going back")
+            else:
+                print("\n\tNo need to go back post turn completion\n\n") 
+                logging.info("Not going back")
+            turn_obs = [(0,0,0,0),'']
 
-
+    print(f"Turn obs- {turn_obs}")
     print(f"Turn value: {turn_forward}")
     if turn_obs[1]!='' and abs(error)<25:   # Check if obstacle has been passed
         print("\n\n\n\tObstacle passed!\n\n\n")
@@ -282,7 +283,7 @@ def decide_turn_path():
 def run():
     global frame, hsv_frame, video_out, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist, prev_turns
-    if front_dist < 95: backward(200,90,97-front_dist,True)
+    if front_dist < 100: backward(200,90,97-front_dist,True)
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # Convert  frame to HSV format
