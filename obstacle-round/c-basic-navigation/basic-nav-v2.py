@@ -91,6 +91,9 @@ def drive_data(motor_speed,servo_steering):
     front_dist = int(values[9])
     right_dist = int(values[10])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
+    if left_dist < 10: logging.warning("Close to the left wall!")
+    elif right_dist < 10: logging.warning("Close to the right wall!")
+    elif front_dist < 15: logging.warning("Might crash, too close")
 
 def forward(speed,steering, target_dist, stop=False):
     global distance
@@ -182,7 +185,7 @@ def decide_path():
     h = current_obs[0][3]
     colour = current_obs[1]
     if colour == 'green' and y > 40 and x < 1200: steering -= (1200-x) * 0.0925
-    elif colour == 'red' and y > 40 and (x + w) > 80: steering += x*0.055
+    elif colour == 'red' and y > 40 and (x + w) > 80: steering += x*0.1
     else:
         # PI algorithm to mainain a yaw
         target_yaw = (turns * 90) % 360
@@ -216,7 +219,7 @@ def run():
 
         # Decide navigation based on obstacle detection
         speed, steering = decide_path()
-        if front_dist < 100 and (distance - start_dist) > 70: break # Stop for turn
+        if front_dist < 115 and (distance - start_dist) > 75: break # Stop for turn
 
         drive_data(speed, steering)
         print(f"Steering: {steering}")

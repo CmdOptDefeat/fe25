@@ -64,7 +64,7 @@ if True:    # Variable declarations
     upper2_black = np.array([49, 175, 90])
     # The pink parking pieces also show up as red at home!
 
-    start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
+    start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
 
     # These are currently seen obstacles
     red_obs = []
@@ -84,7 +84,7 @@ def drive_data(motor_speed,servo_steering):
     global left_dist, front_dist, right_dist
     global location
     # Send command
-    command = f"{motor_speed},{servo_steering}\n"
+    command = f"{motor_speed},{servo_steering},1\n"
     ser.write(command.encode())
 
     # Wait for response from RP2040
@@ -156,7 +156,7 @@ def get_obstacle_positions(contours, obs):
     for cnt in contours:
         if cv2.contourArea(cnt) > min_area and cv2.contourArea(cnt) < max_area:
             x,y,w,h = cv2.boundingRect(cnt)
-            if h*2 > w or (y > 140 and abs(1200-x) < 250 and h > 100):
+            if ((h*2>w and not turning) or (turning and h*1.2>w)) or (y > 140 and abs(1200-x) < 250 and h > 100):
                 # TODO when driving integration done
                 obs.append([(x,y,w,h), (0,0)])
     return obs
@@ -208,27 +208,29 @@ def decide_turn_path():
     print(f"Target yaw = {target_yaw}, error = {error}")
 
     if start_pos == 'outer':            # Starting turn near the outer wall
-        # TODO Fix this  
+        # TODO Fix this
+        if turn_obs[1] == '' and colour != '': turn_obs = current_obs  
         if abs(error) > 80 and turning:
-            if turn_dir == 1: steering = 145
-            elif turn_dir == -1: steering = 10
-            speed = 190
-        elif abs(error) > 48 and turning:
             if turn_dir == 1: steering = 155
+            elif turn_dir == -1: steering = 10
+            speed = 195
+        elif abs(error) > 48 and turning:
+            if turn_dir == 1: steering = 165
             elif turn_dir == -1: steering = 3
-            speed = 190    
+            speed = 195    
         elif colour == 'green' and y > 40 and x < 1260: 
             path = 'LEFT'
-            steering -= (1200-x) * 0.09
+            steering -= (1200-x) * 0.1
         elif colour == 'red' and y > 40 and (x + w) > 80: 
             path = 'RIGHT'
-            steering += x*0.08
+            steering += x*0.09
         else:
             steering = pi_control(error)    
-        if abs(error) < 20 and turning: 
+        if abs(error) < 20 and ((left_dist < 20 and turn_obs[1]=='green') or (right_dist < 20 and turn_obs[1]=='red') or turn_obs[1]=='') : 
             turning = False
             turns += 1
     
+    # TODO no obstacle
     elif start_pos == 'inner':              # Starting turn near the inner wall
         if turn_obs[1] == '' and colour != '': turn_obs = current_obs
         if turn_obs[1] == 'red' and turning:
@@ -246,7 +248,7 @@ def decide_turn_path():
                     turn_forward = 1
                     steering = 15
                 if turn_forward == 1 and abs(error-90)>20: 
-                    steering = 155
+                    steering = 165
                     turn_forward = 2
             elif turn_dir == -1: steering = 3
         elif turning and turn_obs[1] == '':
@@ -255,7 +257,7 @@ def decide_turn_path():
         elif not turning:
             steering = pi_control(error)
 
-        if turning and ((abs(error)<10 and turn_forward == 3) or (abs(error)<25 and turn_forward == 0)):       # End of turn determination
+        if turning and ((abs(error)<10 and turn_forward == 2) or (abs(error)<25 and turn_forward == 0)):       # End of turn determination
             turning = False
             turn_forward = 0
             turns += 1
@@ -318,6 +320,7 @@ try:
 
 finally:
     drive_data(0,90)            # Stop robot
+    video_out.write(picam2.capture_array())
     video_out.release()
     picam2.stop_preview()       # Close camera
     picam2.stop()
