@@ -2,79 +2,76 @@
 This programs starts from where the basic-nav-v2 program ends, i.e start of turn, and ensure the robot completes the turn upto crossing the obstacle markers nearest to the turn
 '''
 
-import cv2
+import cv2      # Import all necessary libraries
 import numpy as np
 from picamera2 import Picamera2
-import time
-import serial
+import time, serial, os, logging
 import RPi.GPIO as GPIO
 from datetime import datetime
-import logging, os
 
-# Status LED
-LED = 17
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(LED, GPIO.OUT)
+if True:    # System setup
+    # Status LED
+    LED = 17
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(LED, GPIO.OUT)
 
-# Serial config
-# usb-Raspberry_Pi_Pico_E6625887D3859130-if00 - Pranav
-# usb-Raspberry_Pi_Pico_E6625887D3482132-if00 - Adbhut
-ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if00', 115200, timeout=1)
+    # Serial config
+    # usb-Raspberry_Pi_Pico_E6625887D3859130-if00 - Pranav
+    # usb-Raspberry_Pi_Pico_E6625887D3482132-if00 - Adbhut
+    ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if00', 115200, timeout=1)
 
-tuning = Picamera2.load_tuning_file("imx219.json")
-picam2 = Picamera2(tuning = tuning)
-config = picam2.create_video_configuration(main={"size": (1280, 720), "format": 'RGB888'})
+    tuning = Picamera2.load_tuning_file("imx219.json")
+    picam2 = Picamera2(tuning = tuning)
+    config = picam2.create_video_configuration(main={"size": (1280, 720), "format": 'RGB888'})
 
-log_dir = 'obstacle-round/e-turning-for-obstacles/logs'
-now = datetime.now()
-log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
-log_path = os.path.join(log_dir, log_filename)
-# Configure logging to append mode
-logging.basicConfig(
-    filename=log_path,
-    filemode='a',  # Append mode
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+if True:    # Logging, video setup
+    log_dir = 'obstacle-round/e-turning-for-obstacles/logs'
+    now = datetime.now()
+    log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+    log_path = os.path.join(log_dir, log_filename)
+    # Configure logging to append mode
+    logging.basicConfig(
+        filename=log_path,
+        filemode='a',  # Append mode
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
-video_dir = "obstacle-round/e-turning-for-obstacles/videos"
-os.makedirs(video_dir, exist_ok=True)
-output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
+    video_dir = "obstacle-round/e-turning-for-obstacles/videos"
+    os.makedirs(video_dir, exist_ok=True)
+    output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
 
-fps = 20
-frame_size = (1280, 720)
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
-video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
-print("\n\nCreated log file, initialised video\n\n")
+    fps = 20
+    frame_size = (1280, 720)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
+    video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
+    print("\n\nCreated log file, initialised video\n\n")
 
-picam2.configure(config)
-picam2.start_preview()
+if True:    # Variable declarations
+    yaw, target_yaw, total_error= 0, 0, 0
+    distance, start_dist = 0, 0
+    front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
+    turn_dir, turns, prev_turns, turning, turn_forward = 1, 0, 0, False, 0  # 1:Clockwise; -1:Anticlockwise
 
-# Declaring some global variables
-yaw, target_yaw, total_error= 0, 0, 0
-distance, start_dist = 0, 0
-front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-turn_dir, turns, prev_turns, turning, turn_forward = 1, 0, 0, False, 0  # 1:Clockwise; -1:Anticlockwise
+    #Define colour ranges
+    lower_red = np.array([0, 120, 88])
+    upper_red = np.array([10, 255, 255])
+    lower_green = np.array([62, 120, 78])
+    upper_green = np.array([71, 255, 255])
+    lower1_black = np.array([37, 65, 20])
+    upper1_black = np.array([65, 130, 60])
+    lower2_black = np.array([40, 130, 50])
+    upper2_black = np.array([49, 175, 90])
+    # The pink parking pieces also show up as red at home!
 
-#Define colour ranges
-lower_red = np.array([0, 120, 88])
-upper_red = np.array([10, 255, 255])
-lower_green = np.array([52, 120, 78])
-upper_green = np.array([70, 255, 255])
-lower1_black = np.array([37, 65, 20])
-upper1_black = np.array([65, 130, 60])
-lower2_black = np.array([40, 130, 50])
-upper2_black = np.array([49, 175, 90])
-# The pink parking pieces also show up as red at home!
+    start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
 
-start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
-
-# These are currently seen obstacles
-red_obs = []
-green_obs = []
-prev_obs = [(0,0,0,0),'']
-prev_steering = 90
-turn_obs = [(0,0,0,0),'']
+    # These are currently seen obstacles
+    red_obs = []
+    green_obs = []
+    prev_obs = [(0,0,0,0),'']
+    prev_steering = 90
+    turn_obs = [(0,0,0,0),'']
 
 def led(duration=1.5):
     GPIO.output(LED, GPIO.HIGH)
@@ -98,11 +95,14 @@ def drive_data(motor_speed,servo_steering):
         if values[index]!='': values[index] = float(values[index])
     logging.info(values)    # Logging
     yaw = values[0]
-    distance = -values[14] / 42
+    distance = -round(values[14]/42, 1)
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
+    if left_dist < 10: logging.warning("Close to the left wall!")
+    elif right_dist < 10: logging.warning("Close to the right wall!")
+    elif front_dist < 15: logging.warning("Might crash, too close")
 
 def forward(speed,steering, target_dist, stop=False):
     global distance
@@ -116,7 +116,7 @@ def backward(speed,steering, target_dist, stop=False):
     global distance
     first_dist = distance
     while not first_dist - distance > target_dist - 8:
-        drive_data(-speed,steering)
+        drive_data(-abs(speed),steering)    # Prevent errors caused by thinking speed must be negative
         time.sleep(0.0001)
     if stop: drive_data(0,steering)
 
@@ -182,18 +182,16 @@ def pi_control(error):
     elif error < 0: correction = error * 3.3 - total_error * 0.0013 - 2  #left
     print(error)
     steering = 90 + correction 
-    steering = min(max(35,steering),127)       #  Limit PID steering
+    steering = min(max(30,steering),145)       #  Limit PID steering
     print("PI Straight")
     return steering
 
 def decide_turn_path():
-    # Start a tight turn, after around 30° check:
-    # If red obstacle detected drive to ots right
-    # If green obstacle detected drive to its right 
+    # Deciding the turn path based on start position of turn and obstacle seen on the corner
     global yaw, total_error, turns, turning, turn_obs
     global prev_obs, turn_forward, prev_steering, prev_turns
     current_obs = nearest_obstacle()
-    print(f'The current obstacle to tackle is {current_obs}')
+    print(f'Current obstacle: {current_obs}')
     speed = 200
     steering = prev_steering
     path = 'Straight'
@@ -208,7 +206,9 @@ def decide_turn_path():
     if error > 180: error = error - 360
     elif error < -180: error = error + 360
     print(f"Target yaw = {target_yaw}, error = {error}")
-    if start_pos == 'outer':            # Not yet working  
+
+    if start_pos == 'outer':            # Starting turn near the outer wall
+        # TODO Fix this  
         if abs(error) > 80 and turning:
             if turn_dir == 1: steering = 145
             elif turn_dir == -1: steering = 10
@@ -228,7 +228,8 @@ def decide_turn_path():
         if abs(error) < 20 and turning: 
             turning = False
             turns += 1
-    elif start_pos == 'inner':
+    
+    elif start_pos == 'inner':              # Starting turn near the inner wall
         if turn_obs[1] == '' and colour != '': turn_obs = current_obs
         if turn_obs[1] == 'red' and turning:
             if turn_dir == -1:
@@ -238,7 +239,7 @@ def decide_turn_path():
                 if turn_forward == 1 and abs(90-error)>20: 
                     steering = 3
                     turn_forward = 2
-            elif turn_dir == 1: steering = 156
+            elif turn_dir == 1: steering = 165
         elif turn_obs[1] == 'green' and turning:
             if turn_dir == 1:
                 if turn_forward == 0: 
@@ -248,6 +249,9 @@ def decide_turn_path():
                     steering = 155
                     turn_forward = 2
             elif turn_dir == -1: steering = 3
+        elif turning and turn_obs[1] == '':
+            # TODO When no obstacle
+            pass
         elif not turning:
             steering = pi_control(error)
 
@@ -259,25 +263,27 @@ def decide_turn_path():
             print("\n\n\tTurn completed\n")
 
         # Go back if had to turn closer to inner wall and need to change lanes again due to different colour
-        if prev_turns < turns and current_obs[1] != turn_obs[1] and current_obs[1] != '' and turn_obs[1] != '' and start_pos == 'inner':
-            print("\n\tGoing back post turn\n\n") 
-            backward(225,90,13,True)
-            logging.info("Going back")
-        else:
-            print("\n\tNo need to go back post turn completion\n\n") 
-            logging.info("Not going back")
-    print(turn_forward)
-    if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
+        if prev_turns < turns:
+            if current_obs[1] != turn_obs[1] and current_obs[1] != '' and turn_obs[1] != '':
+                print("\n\tGoing back post turn\n\n") 
+                backward(225,90,13,True)
+                logging.info("Going back")
+            else:
+                print("\n\tNo need to go back post turn completion\n\n") 
+                logging.info("Not going back")
+            turn_obs = [(0,0,0,0),'']
+
+    print(f"Turn obs- {turn_obs}")
+    print(f"Turn value: {turn_forward}")
+    if turn_obs[1]!='' and abs(error)<25:   # Check if obstacle has been passed
         print("\n\n\n\tObstacle passed!\n\n\n")
-    prev_obs = current_obs
-    prev_steering = steering
-    prev_turns = turns
+    prev_obs, prev_steering, prev_turns = current_obs, steering, turns
     return path, speed, steering
 
 def run():
     global frame, hsv_frame, video_out, hsv_roi
     global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist, prev_turns
-    if front_dist < 95: backward(200,90,97-front_dist,True)
+    if front_dist < 100: backward(200,90,97-front_dist,True)
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # Convert  frame to HSV format
@@ -301,6 +307,8 @@ def run():
             break
 
 try:
+    picam2.configure(config)
+    picam2.start_preview()
     led()
     picam2.start()
     drive_data(0,90)

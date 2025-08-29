@@ -1,69 +1,69 @@
-import cv2
+import cv2      #Import necessary libraries
 import numpy as np
 from picamera2 import Picamera2
-import time
-import serial
+import time, serial, logging, os
 import RPi.GPIO as GPIO
 from datetime import datetime
-import logging, os
 
-# Status LED
-LED = 17
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(LED, GPIO.OUT)
+if True:    # System setup
+    # Status LED
+    LED = 17
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(LED, GPIO.OUT)
 
-# Serial config
-# usb-Raspberry_Pi_Pico_E6625887D3859130-if00 - Pranav
-# usb-Raspberry_Pi_Pico_E6625887D3482132-if00 - Adbhut
-ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if00', 115200, timeout=1)
+    # Serial config
+    # usb-Raspberry_Pi_Pico_E6625887D3859130-if00 - Pranav
+    # usb-Raspberry_Pi_Pico_E6625887D3482132-if00 - Adbhut
+    ser = serial.Serial('/dev/serial/by-id/usb-Raspberry_Pi_Pico_E6625887D3859130-if00', 115200, timeout=1)
 
-tuning = Picamera2.load_tuning_file("imx219.json")
-picam2 = Picamera2(tuning = tuning)
-config = picam2.create_video_configuration(main={"size": (1280, 720),"format": 'RGB888'})
+    tuning = Picamera2.load_tuning_file("imx219.json")
+    picam2 = Picamera2(tuning = tuning)
+    config = picam2.create_video_configuration(main={"size": (1280, 720),"format": 'RGB888'})
 
-log_dir = 'obstacle-round/c-basic-navigation/logs'
-now = datetime.now()
-log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
-log_path = os.path.join(log_dir, log_filename)
-# Configure logging to append mode
-logging.basicConfig(
-    filename=log_path,
-    filemode='a',  # Append mode
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+if True:    # Logging, video setup
+    log_dir = 'obstacle-round/c-basic-navigation/logs'
+    now = datetime.now()
+    log_filename = f"log_{now.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+    log_path = os.path.join(log_dir, log_filename)
+    # Configure logging to append mode
+    logging.basicConfig(
+        filename=log_path,
+        filemode='a',  # Append mode
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
-video_dir = "obstacle-round/c-basic-navigation/videos"
-os.makedirs(video_dir, exist_ok=True)
-output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
+    video_dir = "obstacle-round/c-basic-navigation/videos"
+    os.makedirs(video_dir, exist_ok=True)
+    output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
 
-fps = 30
-frame_size = (1280, 720)
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
-video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
-print("Created log file, initialised video")
+    fps = 30
+    frame_size = (1280, 720)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
+    video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
+    print("Created log file, initialised video")
 
-# Declaring some global variables
-yaw, target_yaw, total_error= 0, 0, 0
-distance, start_dist = 0, 0
-front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
-turns, turning = 1, False
+if True:    # Declaring variables
+    yaw, target_yaw, total_error= 0, 0, 0
+    distance, start_dist = 0, 0
+    front_dist, left_dist, back_dist, right_dist = 100, 35, 100, 35
+    turns, turning = 1, False
 
-#Define colour ranges
-lower_red = np.array([0, 120, 88])
-upper_red = np.array([10, 255, 255])
-lower_green = np.array([52, 120, 78])
-upper_green = np.array([70, 255, 255])
-lower1_black = np.array([37, 65, 20])
-upper1_black = np.array([65, 130, 60])
-lower2_black = np.array([40, 130, 50])
-upper2_black = np.array([49, 175, 90])
-# The pink parking pieces also show up as red at home!
+    #Define colour ranges
+    lower_red = np.array([0, 120, 88])
+    upper_red = np.array([10, 255, 255])
+    lower_green = np.array([62, 120, 78])
+    upper_green = np.array([71, 255, 255])
+    lower1_black = np.array([37, 65, 20])
+    upper1_black = np.array([65, 130, 60])
+    lower2_black = np.array([40, 130, 50])
+    upper2_black = np.array([49, 175, 90])
+    # The pink parking pieces also show up as red at home!
 
-# These are currently seen obstacles
-red_obs = []
-green_obs = []
-prev_obs = [(0,0,0,0),'']
+    # These are currently seen obstacles
+    red_obs = []
+    green_obs = []
+    prev_obs = [(0,0,0,0),'']
 
 def led(duration=1.5):
     GPIO.output(LED, GPIO.HIGH)
@@ -86,7 +86,7 @@ def drive_data(motor_speed,servo_steering):
         if values[index]!='': values[index] = float(values[index])
     logging.info(values)    # Logging
     yaw = values[0]
-    distance = -values[14] / 42
+    distance = -round(values[14]/42, 1)
     left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
@@ -181,21 +181,22 @@ def decide_path():
     w = current_obs[0][2]
     h = current_obs[0][3]
     colour = current_obs[1]
-    if colour == 'green' and y > 40 and x < 1200: steering -= (1200-x) * 0.0825
+    if colour == 'green' and y > 40 and x < 1200: steering -= (1200-x) * 0.0925
     elif colour == 'red' and y > 40 and (x + w) > 80: steering += x*0.055
     else:
         # PI algorithm to mainain a yaw
         target_yaw = (turns * 90) % 360
         error = target_yaw - yaw
+        print(f"Target - {target_yaw}; error - {error}")
         correction = 0
         if error > 180: error = error - 360
         elif error < -180: error = error + 360
         total_error += error
-        if error > 0: correction = error * 2.5 - total_error * 0.001    #right
+        if error > 0: correction = error * 3 - total_error * 0.0012    #right
         elif error < 0: correction = error * 3.3 - total_error * 0.0012 - 2  #left
         print(error)
         steering = 90 + correction 
-        steering = min(max(35,steering),127)       #  Limit PID steering
+        steering = min(max(30,steering),145)       #  Limit PID steering
         print("PI Straight")
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed\n\n\n")
@@ -215,7 +216,7 @@ def run():
 
         # Decide navigation based on obstacle detection
         speed, steering = decide_path()
-        if front_dist < 110 and (distance - start_dist) > 150: break # Stop for turn
+        if front_dist < 100 and (distance - start_dist) > 70: break # Stop for turn
 
         drive_data(speed, steering)
         print(f"Steering: {steering}")
