@@ -75,7 +75,7 @@ def drive_data(motor_speed,servo_steering):
     global yaw, distance, start_dist
     global left_dist, front_dist, right_dist
     # Send command
-    command = f"{motor_speed},{servo_steering}\n"
+    command = f"{motor_speed},{servo_steering},1\n"
     ser.write(command.encode())
 
     # Wait for response from RP2040
