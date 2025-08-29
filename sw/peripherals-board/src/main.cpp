@@ -39,6 +39,7 @@ SensorManager sensorManager(VEHICLE_GET_CONFIG);
 
 enum CoreControlState{
 
+  OPEN_ROUND,
   GET_ORIENTATION,
   UNPARK,
   DRIVE_FROM_PI,
@@ -108,6 +109,7 @@ void setup(){
 
   unparkAlgorithm.init(&debugLogger);
   parkAlgorithm.init(&debugLogger);
+  openRoundAlgorithm.init(&debugLogger);
 
   if(!sensorManager.addSensor(&bno)){
 
@@ -147,7 +149,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = UNPARK;
+  coreControlState = OPEN_ROUND;
 
 }
 
@@ -469,6 +471,10 @@ void coreOpenRound(){
 void coreRunStateMachine(){
 
   switch(coreControlState){
+
+    case OPEN_ROUND:
+      coreOpenRound();
+      break;
 
     case GET_ORIENTATION:
       coreGetOrientation();
