@@ -156,7 +156,7 @@ The board is a two-layer, 1.6 mm thick PCB designed in [KiCad](https://kicad.org
 TODO: Expand
 
 ## Software
-The interface board was programmed in C++, with the C++ SDK from Raspberry Pi for the RP2040 chip. Code was flashed using the PlatformIO extension for the VSCode editor.
+The interface board was programmed in C++, with the C++ SDK from Raspberry Pi for the RP2040 chip. Code was compiled and flashed with the PlatformIO extension for Visual Studio Code.
 
 The codebase is designed to be modular, with easily swappable drivers for hardware abstraction. Algorithms do not need to know about specific hardware protocols or constraints
 
