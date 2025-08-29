@@ -219,9 +219,9 @@ The Raspberry Pi system handles most tasks for the obstacle round, including unp
 
 ## Raspbian Setup
 
-We are using Raspbian Bookworm.
+We are using Raspbian Bookworm on the Raspberry Pi (latest at the time of this project)
 Run the following commands in the terminal
-- $`sudo chmod 0700 /run/user/1000`
+- $`sudo chmod 0770 /run/user/1000`
 - $`sudo apt install software-properties-common`
 - $`sudo apt install python3-launchpadlib`
 - $`sudo apt install code`
@@ -229,7 +229,8 @@ Run the following commands in the terminal
 - $`sudo apt install idle3`
 - $`sudo apt install python3-opencv`
 - $`sudo apt install -y python3-libcamera python3-pyqt5 python3-picamera2`
-- Refer [here](https://www.waveshare.com/wiki/UPS_HAT_(E)) to install UPS library to show details about the batteries.
+- Test camera library installation with $`rpicam-hello`
+- Refer [here](https://www.waveshare.com/wiki/UPS_HAT_(E)) to install UPS Hat library to see details about the batteries etc.
 - If the Pi is accidentally shut down, and git is not working, run the following commands: 
 1. $`find .git/objects/ -type f -empty | xargs rm` - Cleaning
 2. $`git fetch -p` - Restore missing objects
@@ -245,16 +246,15 @@ The method used here involves running executables on startup. Refer [`initial-te
 3. In the launcher script, navigate to the directory of the python file and run it with `sudo python3 (file-name).py`. Then return to user directory
 4. In the directory with launcher script, make it executable by running `sudo chmod 755 (launcher-name).sh`
 5. Run `sudo crontab -e` (you can use nano to edit it), and add `@reboot sh /home/(user)/(path to launcher)/(launcher-name).sh` at the end.
-6. Restart the Pi (`sudo reboot`) to check if it works.
- 
+6. Restart the Pi (`sudo reboot`) to check if it works. 
 
 ## PiCamera 3
 
-The Raspberry Pi Camera Module 3 Wide is used for obstacle detection. It is placed high up to have a good view. (We actually only use the bottom half of the frame!)
+The Raspberry Pi Camera Module 3 Wide is used for obstacle detection. It is placed high up to have a good view. (We actually only use the bottom half of the frame!) It is connected to port 0.
 
 ## Serial Communication
 
-The Pi communicates with the RP2040 over the serial. When the Pi sends a command (speed and steering), the RP2040 sends back data (like yaw, lidar distance, turn direction etc.)
+The Pi communicates with the RP2040 over the serial. When the Pi sends a command (speed and steering), the RP2040 sends back data (like yaw, lidar distance, turn direction etc.) The RP2040 is connected to a USB port of the Raspberry Pi and is recognised by its ID.
 
 
 # Open Round
@@ -285,4 +285,5 @@ The idea to stick to the outer wall, so even with randomisation, the extended in
 We would like to thank
 - YoLabs Team:
 - Raspberry Pi Foundation:
-- OpenCV :
+- OpenCV:
+- GitHub:

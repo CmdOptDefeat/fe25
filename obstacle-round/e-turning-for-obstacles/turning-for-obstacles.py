@@ -113,7 +113,7 @@ def backward(speed,steering, target_dist, stop=False):
     global distance
     first_dist = distance
     while not first_dist - distance > target_dist - 8:
-        drive_data(-speed,steering)
+        drive_data(-abs(speed),steering)    # Prevent errors caused by thinking speed must be negative
         time.sleep(0.0001)
     if stop: drive_data(0,steering)
 
