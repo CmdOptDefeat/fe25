@@ -12,7 +12,7 @@ hw_rev_2_SerialCommunication::hw_rev_2_SerialCommunication(VehicleConfig cfg){
 void hw_rev_2_SerialCommunication::init(ILogger *logger){
 
   _logger = logger;
-  _serialTask = new SchedulerTask(_serialCallbackWrapper, 1000);  // 10 ms : 100 hz
+  _serialTask = new SchedulerTask(_serialCallbackWrapper, 10);  // 10 ms : 100 hz
   Serial.begin(115200);
 
 }

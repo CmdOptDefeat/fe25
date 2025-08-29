@@ -147,7 +147,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = GET_ORIENTATION;
+  coreControlState = DRIVE_FROM_PI;
 
 }
 
