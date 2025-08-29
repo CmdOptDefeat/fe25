@@ -127,7 +127,7 @@ Parking is also handled by the peripherals interface board. The Raspberry Pi han
 
 # Robot Assembly
 
-It will be helpful to refer to the pictures of the completed model for the following steps. Most screws used are of 3M type (3mm dia.). At some places in our robot, internal hex screws are used in places where plus(+) screws of the right length were not available.
+It will be helpful to refer to the [pictures of the construction](https://github.com/CmdOptDefeat/fe25/tree/main/repo-assets/raw-photos/assembly) while building. Most screws used are of 3M type (3mm dia.). At some places in our robot, internal hex screws are used in places where plus(+) screws of the right length were not available.
 1. Add the front wheels and steering link to the robot
 2. Attach the servo motor and connect it to the steering link
 3. Print all design files
