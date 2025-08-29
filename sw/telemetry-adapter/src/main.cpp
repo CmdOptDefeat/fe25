@@ -102,12 +102,6 @@ void printDataStruct(){
   Serial.print(dataBlock1.oriX);
   Serial.print(',');
 
-  Serial.print(dataBlock1.oriY);
-  Serial.print(',');
-
-  Serial.print(dataBlock1.oriZ);
-  Serial.print(',');
-
   Serial.print(dataBlock1.lidarLeft);
   Serial.print(',');  
 
@@ -126,10 +120,7 @@ void printDataStruct(){
   Serial.print(dataBlock1.commandedSteer);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.distance);
-  Serial.print(',');  
-
-  Serial.print(dataBlock1.speed);
+  Serial.print(dataBlock1.roundDirectionCW);
   Serial.print(',');  
 
   Serial.println();
