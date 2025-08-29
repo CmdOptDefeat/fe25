@@ -22,9 +22,9 @@ private:
   Servo _steeringServo;
   ILogger* _logger;
   const float _ratio = 1;
-  const int _SERVO_MIN = 10;
+  const int _SERVO_MIN = 0;
   const int _SERVO_CENTER = 90;
-  const int _SERVO_MAX = 170;
+  const int _SERVO_MAX = 180;
   const int _COMMAND_MIN = -90;
   const int _COMMAND_CENTER = 0;
   const int _COMMAND_MAX = 90;
