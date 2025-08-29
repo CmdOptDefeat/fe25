@@ -151,7 +151,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = OPEN_ROUND;
+  coreControlState = DRIVE_FROM_PI;
 
 }
 
@@ -522,7 +522,7 @@ void coreSetLEDColor(CoreControlState state){
   switch(state){
 
     case GET_ORIENTATION:
-      rgbLED.setStaticColor(rgbLED.GREEN);
+      rgbLED.setStaticColor(rgbLED.CYAN);
       break;
 
     case DRIVE_FROM_PI:
@@ -534,6 +534,10 @@ void coreSetLEDColor(CoreControlState state){
       break;
 
     case PARK:
+      rgbLED.setStaticColor(rgbLED.GREEN);
+      break;
+
+    case UNPARK:
       rgbLED.setStaticColor(rgbLED.GREEN);
       break;
 

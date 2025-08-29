@@ -22,7 +22,7 @@ VehicleCommand hw_rev_2_SerialCommunication::update(VehicleData data, VehicleCom
   _data = data;
   _displayCmd = cmd;
 
-  _serialTask->update();
+  _parseSerialInput();
 
   return _cmd;
   
@@ -125,6 +125,8 @@ void hw_rev_2_SerialCommunication::_parseSerialInput(){
       _cmd.targetSpeed = rawString.substring(0, comma1Pos).toInt();
       _cmd.targetYaw   = rawString.substring(comma1Pos + 1, comma2Pos) .toInt();
       _cmd.instruction = (VehicleInstruction)(rawString.substring(comma2Pos + 1).toInt());  // cast int to VehicleInstruction
+
+      _sendFormattedData(_data);
 
     }
 
