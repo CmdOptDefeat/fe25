@@ -81,7 +81,7 @@ def led(duration=1.5):
 def drive_data(motor_speed,servo_steering):
     # It sends driving commands to RP2040 and gets back sensor data
     global yaw, distance, start_dist
-    global left_dist, front_dist, right_dist
+    global left_dist, front_dist, right_dist, back_dist
     global location
     # Send command
     command = f"{motor_speed},{servo_steering},1\n"
@@ -96,10 +96,11 @@ def drive_data(motor_speed,servo_steering):
     logging.info(values)    # Logging
     yaw = values[0]
     distance = -round(values[14]/42, 1)
-    left_dist = int(values[12])
     front_dist = int(values[9])
     right_dist = int(values[10])
-    print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
+    back_dist = int(values[11])
+    left_dist = int(values[12])
+    print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}, Back: {back_dist}\n")
     if left_dist < 10: logging.warning("Close to the left wall!")
     elif right_dist < 10: logging.warning("Close to the right wall!")
     elif front_dist < 15: logging.warning("Might crash, too close")
@@ -284,7 +285,7 @@ def decide_turn_path():
 
 def run():
     global frame, hsv_frame, video_out, hsv_roi
-    global yaw, distance, left_dist, front_dist, right_dist, turning, turns, start_dist, prev_turns
+    global yaw, distance, left_dist, front_dist, right_dist, back_dist, turning, turns, start_dist, prev_turns
     if front_dist < 100: backward(200,90,97-front_dist,True)
     while True:        
         frame = picam2.capture_array()  # Read a frame from the camera

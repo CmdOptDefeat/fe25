@@ -30,11 +30,12 @@ def main():
             values = response.split(",")
             values.pop()
             yaw = float(values[0])
-            distance = -float(values[14]) / 30
-            left_dist = int(values[12])
+            distance = -float(values[14]) / 3
             front_dist = int(values[9])
             right_dist = int(values[10])
-            print(f"Received Data - Yaw: {yaw}, Distance: {distance} \n\tLeft: {left_dist}, Front: {front_dist}, Right: {right_dist}")
+            back_dist = int(values[11])
+            left_dist = int(values[12])
+            print(f"Received Data - Yaw: {yaw}, Distance: {distance} \n\tLeft: {left_dist}, Front: {front_dist}, Right: {right_dist} Back: {back_dist}")
 
 
         except KeyboardInterrupt:
