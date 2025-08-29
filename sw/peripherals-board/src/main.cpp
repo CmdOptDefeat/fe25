@@ -151,7 +151,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = DRIVE_FROM_PI;
+  coreControlState = OPEN_ROUND;
 
 }
 
@@ -460,7 +460,9 @@ void coreSafe(){
 
   motor.driveMotor(0, false);
   motor.disarmMotor();
-  steering.steer(90);
+  steering.steer(0);
+
+  while(true);  // temp solution to fix servo jitter
 
 }
 
