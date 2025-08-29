@@ -1,7 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/blob/main/repo-assets/logo/ctrlaltdefeat-no-glow-no-bg-4096.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/blob/main/repo-assets/logo/ctrlaltdefeat-no-glow-no-bg-dark-4096.png">
-  <img alt="CTRL+ALT+DEFEAT Logo (updates based on your theme!)" src="https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/blob/main/repo-assets/logo/ctrlaltdefeat-no-glow-no-bg-4096.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/CmdOptDefeat/fe25/blob/main/repo-assets/logo/ctrlaltdefeat-no-glow-no-bg-4096.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/CmdOptDefeat/fe25/blob/main/repo-assets/logo/ctrlaltdefeat-no-glow-no-bg-dark-4096.png">
+  <img alt="CTRL+ALT+DEFEAT Logo (updates based on your theme!)" src="https://github.com/CmdOptDefeat/fe25/blob/main/repo-assets/logo/ctrlaltdefeat-no-glow-no-bg-4096.png">
 </picture>
 
 <br><br>Welcome to the repository for our entry in the WRO Future Engineers 2025 competition!
@@ -280,7 +280,7 @@ The idea to stick to the outer wall, so even with randomisation, the extended in
 # Acknowledgements
 
 We would like to thank
-- YoLabs Team:
-- Raspberry Pi Foundation:
-- OpenCV:
-- GitHub:
+- YoLabs Team: We thank the YoLabs Team for their guidance and mentorship provided, which helped us improve algorithms and robot design.
+- Raspberry Pi Foundation: Gratitude is owed to the Raspberry Pi Foundation for making excellent hardware, enabling development of this project.
+- OpenCV: Appreciation goes to the OpenCV community for supplying the computer vision tools and extensive documentation, which we have used and are crucial to the solution for the obstacle round.
+- GitHub: Recognition is given to GitHub for providing a collaborative platform that streamlined code management and teamwork, ensuring efficient  development.
