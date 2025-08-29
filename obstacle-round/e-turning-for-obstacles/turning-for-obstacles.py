@@ -100,6 +100,9 @@ def drive_data(motor_speed,servo_steering):
     front_dist = int(values[9])
     right_dist = int(values[10])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
+    if left_dist < 10: logging.warning("Close to the left wall!")
+    elif right_dist < 10: logging.warning("Close to the right wall!")
+    elif front_dist < 15: logging.warning("Might crash, too close")
 
 def forward(speed,steering, target_dist, stop=False):
     global distance
@@ -184,13 +187,11 @@ def pi_control(error):
     return steering
 
 def decide_turn_path():
-    # Start a tight turn, after around 30° check:
-    # If red obstacle detected drive to ots right
-    # If green obstacle detected drive to its right 
+    # Deciding the turn path based on start position of turn and obstacle seen on the corner
     global yaw, total_error, turns, turning, turn_obs
     global prev_obs, turn_forward, prev_steering, prev_turns
     current_obs = nearest_obstacle()
-    print(f'The current obstacle to tackle is {current_obs}')
+    print(f'Current obstacle: {current_obs}')
     speed = 200
     steering = prev_steering
     path = 'Straight'
@@ -205,7 +206,9 @@ def decide_turn_path():
     if error > 180: error = error - 360
     elif error < -180: error = error + 360
     print(f"Target yaw = {target_yaw}, error = {error}")
-    if start_pos == 'outer':            # Not yet working  
+
+    if start_pos == 'outer':            # Starting turn near the outer wall
+        # TODO Fix this  
         if abs(error) > 80 and turning:
             if turn_dir == 1: steering = 145
             elif turn_dir == -1: steering = 10
@@ -225,7 +228,8 @@ def decide_turn_path():
         if abs(error) < 20 and turning: 
             turning = False
             turns += 1
-    elif start_pos == 'inner':
+    
+    elif start_pos == 'inner':              # Starting turn near the inner wall
         if turn_obs[1] == '' and colour != '': turn_obs = current_obs
         if turn_obs[1] == 'red' and turning:
             if turn_dir == -1:
@@ -245,6 +249,9 @@ def decide_turn_path():
                     steering = 155
                     turn_forward = 2
             elif turn_dir == -1: steering = 3
+        elif turning and turn_obs[1] == '':
+            # TODO When no obstacle
+            pass
         elif not turning:
             steering = pi_control(error)
 
@@ -254,6 +261,7 @@ def decide_turn_path():
             turns += 1
             logging.info("Turn completed")
             print("\n\n\tTurn completed\n")
+            turn_obs = [(0,0,0,0),'']
 
         # Go back if had to turn closer to inner wall and need to change lanes again due to different colour
         if prev_turns < turns and current_obs[1] != turn_obs[1] and current_obs[1] != '' and turn_obs[1] != '' and start_pos == 'inner':
@@ -263,12 +271,12 @@ def decide_turn_path():
         else:
             print("\n\tNo need to go back post turn completion\n\n") 
             logging.info("Not going back")
-    print(turn_forward)
-    if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
+
+
+    print(f"Turn value: {turn_forward}")
+    if turn_obs[1]!='' and abs(error)<25:   # Check if obstacle has been passed
         print("\n\n\n\tObstacle passed!\n\n\n")
-    prev_obs = current_obs
-    prev_steering = steering
-    prev_turns = turns
+    prev_obs, prev_steering, prev_turns = current_obs, steering, turns
     return path, speed, steering
 
 def run():
