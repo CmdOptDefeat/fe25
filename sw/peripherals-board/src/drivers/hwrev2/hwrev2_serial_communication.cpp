@@ -12,7 +12,7 @@ hw_rev_2_SerialCommunication::hw_rev_2_SerialCommunication(VehicleConfig cfg){
 void hw_rev_2_SerialCommunication::init(ILogger *logger){
 
   _logger = logger;
-  _serialTask = new SchedulerTask(_serialCallbackWrapper, 1000);  // 10 ms : 100 hz
+  _serialTask = new SchedulerTask(_serialCallbackWrapper, 10);  // 10 ms : 100 hz
   Serial.begin(115200);
 
 }
@@ -81,6 +81,9 @@ void hw_rev_2_SerialCommunication::_sendFormattedData(VehicleData data){
   message += String(_displayCmd.targetSpeed);
   message += seperator;
   message += String(_displayCmd.targetYaw);
+  message += seperator;
+
+  message += String(data.roundDirectionCW);
   message += seperator;
 
   message += String(data.instruction);
