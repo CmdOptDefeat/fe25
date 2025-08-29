@@ -21,7 +21,7 @@ def main():
             steering = float(parts[1])
 
             # Send command to RP2040
-            command = f"{speed},{steering}\n"
+            command = f"{speed},{steering},1\n"
             ser.write(command.encode())
 
             # Wait for response from RP2040
