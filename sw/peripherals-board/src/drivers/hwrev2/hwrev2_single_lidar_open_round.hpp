@@ -63,4 +63,7 @@ private:
     float totalError = 0;            // Used for integral control
 
     bool completed = false;          // Indicates if the 3 rounds are completed
+
+    const int PID_TURN_LIMIT_ABS = 55;
+
 };
