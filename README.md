@@ -9,7 +9,7 @@ We are a team of 2 aspiring engineers building an autonomous robotic car using R
 
 
 # About the Team
-Adbhut Patil: TODO: expand 10th standard, interested in electronics, programming, aviation
+Adbhut Patil: Adbhut is studying in 10th grade, under NIOS. He is interested in robotics, programming, and aviation.
 
 Pranav Kiran Rajarathna: Pranav is currently sudying in the 11th grade(PCMC combination) and has been interested in Robotics for several years . He has participated in WRO in other categories in the past years. He was also part of Coding club in his school and built a few robotics projects for school events. His other interests include maths, physics, numismatics and history.
 
@@ -97,7 +97,7 @@ The [Bill of Materials](https://github.com/CmdOptDefeat/fe25/blob/main/design-fi
 ## Obstacle Management
 
 - This is done mainly using the camera feed from the PiCamera 3 Wide. The NoIR version tends to give red spot in places with lots of light due to lack of IR filter, which made it incompatible for this case.
-- The OpenCV library (in Python3) is used for all the image manipulation and data extrapolation. HSV mode has been used for all the detecting, while images arer displayed in RGB. Sometimes, red may appear as blue due to use of BGR format used by camera to rercord. This is of no consequence, since it does not affect detection itself.
+- The OpenCV library (in Python3) is used for all the image manipulation and data extrapolation. HSV mode has been used for all the detecting, while images arer displayed in RGB. Sometimes, red may appear as blue due to use of BGR format used by camera to record. This is of no consequence, since it does not affect detection itself.
 - Initially, the colour ranges for the obstacles, parking walls and side walls are identified. Interestingly, in our case, the 'magenta' parking walls show up as pure red.
 - First, the region of interest (ROI) is taken as the bottom half of the feed (this is for our camera placement. May vary for other setups).
 - Then, coloured masks (one each for red and green) are applied, followed by OpenCV's controur detection to detect surfaces. Data like position, height and width of the contours may be obtained from the other OpenCV methods.
@@ -114,9 +114,16 @@ Improvements:
 2. A smaller robot would have been more agile, making both turning and straight section navigation much easier.
 3. Having the axles closer would enable for tighter turns.
 
-## Unparking and Parking
+## Getting out of the parking lot
+Getting out of the parking lot (fondly referred to as "unparking") is handled by the peripherals interface board. The vehicle takes three turns to orient itself so it is perpendicular to the parking lot, and then backs up into the parking lot. It then transfers control to the Raspberry Pi.
 
-TODO
+## Parallel parking
+Parking is also handled by the peripherals interface board. The Raspberry Pi hands over control after the last obstacle. The algorithm takes the following steps:
+- Move backwards until the vehicle is abeam the parking lot
+- Turn and move backwards and move into the parking lot
+- Move forwards so that the next turn can be made
+- Turn and move backwards into the parking lot
+- Move forwards and turn until the vehicle is parallel to the parking lot
 
 # Robot Assembly
 
@@ -149,7 +156,7 @@ The board is a two-layer, 1.6 mm thick PCB designed in [KiCad](https://kicad.org
 TODO: Expand
 
 ## Software
-The interface board was programmed in C++, with the C++ SDK from Raspberry Pi for the RP2040 chip. Code was flashed using the PlatformIO extension for the VSCode editor.
+The interface board was programmed in C++, with the C++ SDK from Raspberry Pi for the RP2040 chip. Code was compiled and flashed with the PlatformIO extension for Visual Studio Code.
 
 The codebase is designed to be modular, with easily swappable drivers for hardware abstraction. Algorithms do not need to know about specific hardware protocols or constraints
 
@@ -165,7 +172,6 @@ To ensure easily testable, upgradeable, and clean code, a few standards were adh
 - Drivers must take in a standard unit as their input.
   - Drivers must not take in [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)).
 
-TODO: Finish writing this
 
 ### Drivers
 > [!NOTE]

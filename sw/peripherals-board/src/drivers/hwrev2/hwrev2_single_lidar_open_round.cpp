@@ -48,8 +48,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
         _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Stopping turn TY:" + String(targetYaw) + " deg Yaw" + String(yaw) + " deg");   
     }
     else if (abs(difference) > 10 && abs(difference) < 75){ // Continue turning
-        if(turnDir == 1)pos = 90 + (47 - (90-abs(difference))/3); // Set servo position for turning
-        else if (turnDir == -1) pos = 90 - (54 - (90-abs(difference))/3.4); // Set servo position for turning
+        pos = 90 + (80 - (90-abs(difference))/3) * turnDir; // Set servo position for turning
         _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "steering" + String(pos) + " " + String(yaw));
     }
   }
@@ -93,8 +92,8 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     if (error > 0) correction = error * 2.3 - totalError * 0.001; // correction to the right
     else if (error < 0) correction = error * 2.2 - totalError * 0.001; // correction to the left
 
-    if (correction > 45) correction = 45;
-    else if (correction < -45) correction = -45;
+    if (correction > PID_TURN_LIMIT_ABS) correction = PID_TURN_LIMIT_ABS;
+    else if (correction < -PID_TURN_LIMIT_ABS) correction = -PID_TURN_LIMIT_ABS;
     pos = 90 + correction; // Set servo position based on correction
 
   } 

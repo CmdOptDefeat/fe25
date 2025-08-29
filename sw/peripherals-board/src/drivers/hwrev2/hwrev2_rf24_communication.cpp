@@ -28,18 +28,15 @@ VehicleCommand hw_rev_2_RF24Communication::update(VehicleData data, VehicleComma
   hwrev2_rf24_telem_block1 telemBlock1;
   hwrev2_rf24_cmd_block1 cmdBlock1;
 
-  telemBlock1.oriX            = data.orientation.x;
-  telemBlock1.oriY            = data.orientation.y;
-  telemBlock1.oriZ            = data.orientation.z;
-  telemBlock1.lidarLeft       = data.lidar[270];
-  telemBlock1.lidarFront      = data.lidar[0];
-  telemBlock1.lidarRight      = data.lidar[90];
-  telemBlock1.lidarBack       = data.lidar[180];
-  telemBlock1.commandedSpeed  = cmd.targetSpeed;
-  telemBlock1.commandedSteer  = cmd.targetYaw;
-  telemBlock1.distance        = data.encoderPosition/43;
-  telemBlock1.speed           = data.speed;
-  telemBlock1.millis          = millis();
+  telemBlock1.oriX              = data.orientation.x;
+  telemBlock1.lidarLeft         = data.lidar[270];
+  telemBlock1.lidarFront        = data.lidar[0];
+  telemBlock1.lidarRight        = data.lidar[90];
+  telemBlock1.lidarBack         = data.lidar[180];
+  telemBlock1.commandedSpeed    = cmd.targetSpeed;
+  telemBlock1.commandedSteer    = cmd.targetYaw;
+  telemBlock1.millis            = millis();
+  telemBlock1.roundDirectionCW  = data.roundDirectionCW;
 
   _radio->openWritingPipe(TLM_PIPE_0);
   _radio->stopListening();

@@ -17,7 +17,7 @@ public:
     void init(ILogger* logger) override;
     VehicleCommand drive(VehicleData vehicleData) override;
     bool isDirectControl() override {return true;}
-    bool isFinished() override {return true;}       // THIS IS VERY BAD AND WILL BREAK AT THE SLIGHTEST TOUCH
+    bool isFinished() override {return completed;}       // THIS IS VERY BAD AND WILL BREAK AT THE SLIGHTEST TOUCH
 
 private:
     VehicleConfig _config;
@@ -63,4 +63,7 @@ private:
     float totalError = 0;            // Used for integral control
 
     bool completed = false;          // Indicates if the 3 rounds are completed
+
+    const int PID_TURN_LIMIT_ABS = 55;
+
 };

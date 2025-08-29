@@ -39,6 +39,7 @@ SensorManager sensorManager(VEHICLE_GET_CONFIG);
 
 enum CoreControlState{
 
+  OPEN_ROUND,
   GET_ORIENTATION,
   UNPARK,
   DRIVE_FROM_PI,
@@ -55,6 +56,7 @@ VehicleInstruction coreVehicleInstructionFromPi;
 CoreControlState coreControlState;
 bool coreRoundDirCW;
 
+
 void coreGetOrientation();
 void coreUnpark();
 void coreDriveFromPi();
@@ -62,6 +64,7 @@ void corePark();
 void coreSafe();
 void coreOpenRound();
 void coreRunStateMachine();
+void coreSetLEDColor(CoreControlState state);
 
 
 void debugPrintVehicleData(VehicleData data, VehicleCommand cmd);
@@ -108,6 +111,7 @@ void setup(){
 
   unparkAlgorithm.init(&debugLogger);
   parkAlgorithm.init(&debugLogger);
+  openRoundAlgorithm.init(&debugLogger);
 
   if(!sensorManager.addSensor(&bno)){
 
@@ -147,7 +151,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = DRIVE_FROM_PI;
+  coreControlState = OPEN_ROUND;
 
 }
 
@@ -462,6 +466,13 @@ void coreSafe(){
 
 void coreOpenRound(){
 
+  if(openRoundAlgorithm.isFinished()){
+
+    coreControlState = SAFE;
+    return;
+
+  }
+
   coreVehicleCommand = openRoundAlgorithm.drive(coreVehicleData);
 
 }
@@ -469,6 +480,10 @@ void coreOpenRound(){
 void coreRunStateMachine(){
 
   switch(coreControlState){
+
+    case OPEN_ROUND:
+      coreOpenRound();
+      break;
 
     case GET_ORIENTATION:
       coreGetOrientation();
@@ -496,15 +511,36 @@ void coreRunStateMachine(){
 
   };
 
+  coreSetLEDColor(coreControlState);
+
 }
 
-/*
-enum CoreControlState{
+void coreSetLEDColor(CoreControlState state){
 
-  GET_ORIENTATION,
-  UNPARK,
-  DRIVE_FROM_PI,
-  PARK,
-  SAFE
+  rgbLED.limitBrightness(10);
 
-}; */
+  switch(state){
+
+    case GET_ORIENTATION:
+      rgbLED.setStaticColor(rgbLED.GREEN);
+      break;
+
+    case DRIVE_FROM_PI:
+      rgbLED.setStaticColor(rgbLED.CYAN);
+      break;
+
+    case OPEN_ROUND:
+      rgbLED.setStaticColor(rgbLED.CYAN);
+      break;
+
+    case PARK:
+      rgbLED.setStaticColor(rgbLED.GREEN);
+      break;
+
+    case SAFE:
+      rgbLED.setStaticColor(rgbLED.AMBER);
+      break;
+
+  }
+
+}

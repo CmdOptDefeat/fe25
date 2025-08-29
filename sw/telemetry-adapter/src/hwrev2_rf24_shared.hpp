@@ -5,8 +5,6 @@
 struct hwrev2_rf24_telem_block1{
 
   float oriX;
-  float oriY;
-  float oriZ;
 
   uint16_t lidarLeft;
   uint16_t lidarFront;
@@ -18,8 +16,7 @@ struct hwrev2_rf24_telem_block1{
 
   uint32_t millis;
 
-  int16_t distance;
-  uint16_t speed;
+  bool roundDirectionCW;
 
 };
 
