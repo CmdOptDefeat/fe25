@@ -22,17 +22,15 @@ Pranav Kiran Rajarathna: Pranav is currently sudying in the 11th grade(PCMC comb
 # Project Overview
 This project is our official entry for the Future Engineers category at the World Robot Olympiad 2025. Our goal is to construct a self-driving vehicle capable of navigating the track in both the Open and Obstacle Rounds. The programs are written in C++ and Python in the VSCode IDE, with the PlatformIO extension. OpenCV is used with the Raspberry Pi for object detection and navigation. This repository contains the programs, hardware description, schematics and design files of our solution.
 
+Note: The whole readme file is massive.
+See [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#peripherals-interface-board) for more details about the peripherals interface board, and [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#raspberry-pi-system) for details about the RPi 5 and its setup. [System architecture](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#system-architecture) includes information about the [robot and mobility](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#mobility), [power system](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#power), [sensors](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#sensors), [obstacle management](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#obstacle-management) and [parking and unparking](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#unparking-and-parking).
 
 # Hardware Components
 - __Compute:__ Raspberry Pi 5 (main computer), Raspberry Pi 2040 (Waveshare RP2040-Zero, real-time control)
-- __Sensors:__ 1D and 2D LiDAR, IMU, rotary encoders, Picamera
+- __Sensors:__ 1D LiDAR, IMU, rotary encoders, Picamera
 - __Actuators:__ N20 geared DC motor with encoder, MG996R 180° servo
 - __Chassis:__ Commercially available base with 3D-printable additions (3D-design files included)
 - __Electronics:__ Custom peripherals interface PCB for reliable connections to sensors
-
-Note: The whole readme file is massive.
-See [this section](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025?tab=readme-ov-file#peripherals-interface-board) for more details about sensors on the peripherals interface board, and <link> for details about the RPi 5 and its sensors.
-
 
 # Repository Structure
 - [design-files](https://github.com/CmdOptDefeat/fe25/tree/main/design-files) : Contains the Bill of Materials, 3D-printable design files and hardware. 
@@ -46,26 +44,27 @@ See [this section](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Enginee
 
 > [!NOTE]
 > Random files called `.lgd-nfy0` may be seen sometimes in varioues places. These were probably created by a typo a long time ago, and despite repeated deletion, they keep spawning everywhere in the Pi's cone of the repo! Just ignore them, if they occur. 
+> `.DS_Store` are some system files used on MacOS. These too may be ignored.
 
 
 # System Architecture 
 
 -	Raspberry Pi 5: It uses ROS2 and handles more complex tasks like object and colour detection, route planning, and the 2D LiDAR
 -	RP2040 (Pi Pico): Handles real-time tasks (motor PID, encoder feedback, servo control, IMU, 1D LiDAR)
--	LiDARs: Used for detecting turn direction, obstacles and in parking
--	IMU: Gives yaw (and other orientations) of the robot in [0,360)
+-	LiDARs: Used for detecting turn direction and executing turns and in parking
+-	IMU: Gives yaw (and other orientations) of the robot in [0,360) clockwise
 -	Motor/Servos: PWM and PI controls respectively for movement using sensor data, coordinated by the RP2040
 
 ## Mobility
 
 - A commercially available metal [chassis base](https://www.elecrow.com/4wd-smart-car-robot-chassis-for-arduino-servo-steering.html) has been used with custom designed and printed parts. This chassis was selected mainly for its good steering system, mobility and customisabilty (there are lots of through holes through the base-frame). While the steering was retained, the remaining parts were custom designed.
 - A link based steering system is used in the robot with a link-rod between the front wheel joints and another between a wheel joint and the servo. This steering system has been taken from the chassis without much modification due to its precision. A MG996R 180° servo has been used for the steering due to its high torque and accuracy, which improve mobility. 
-- A single axle rear drive train is used for driving is used. A 200RPM N20 motor is used due to its speed and decent torque. A 1:1 gear ratio is used with a pair of brass gears. Bearings are used on the rear axle for smooth movement. A custom [rear drive holder](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/blob/main/design-files/N20%20Motor%20Holder.stl) is used to house all these parts.
+- A single axle rear drive train is used for driving is used. A 200RPM N20 motor is used due to its speed and decent torque. A 1:1 gear ratio is used with a pair of brass gears. Bearings are used on the rear axle for smooth movement. A custom [rear drive holder](https://github.com/CmdOptDefeat/fe25/blob/main/design-files/N20%20Motor%20Holder.stl) is used to house all these parts.
 - Both the servo and N20 motors are connected to the peripherals board. The servo is controlled using the standard library, while PWM is used for speed control of the motor.
 - Turning Radius: Optimized for narrow WRO track corners, and is 32-33 cm.
 - Build Choice Reasoning: Offers realistic car-like dynamics, ideal for FE challenge simulation.
-[Design files](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/design-files) contains all the other custom 3D-Design files (created on [TinkerCAD](https://www.tinkercad.com)) for mounting various compnents and systems onto the base chassis and one another.
-[Robot assembly](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025?tab=readme-ov-file#robot-assembly) instructions are below.
+[Design files](https://github.com/CmdOptDefeat/fe25/tree/main/design-files) contains all the other custom 3D-Design files (created on [TinkerCAD](https://www.tinkercad.com)) for mounting various compnents and systems onto the base chassis and one another.
+[Robot assembly](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#robot-assembly) instructions are below.
 - Improvements: 
 1. A uniform steering system. In the current model, the servo has to turn a greater angle left than right for the same angles of the wheels in each direction. This complicates driving algorithms to some extent. A better, but equally smooth steering system, maybe a rack-and-pinion, will solve these issues.
 2. Better gear train. The current gears, though made of brass wear down quite easily for some unidentified reason. This causes slipping if there is more wear.
@@ -89,13 +88,11 @@ See [this section](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Enginee
 - __nRF24L01:__ This is the wireless module used for wireless communication during testing and debugging with the RP2040. Another custom module (telemetry board) is made for receiving the data. (Note : This is not plugged in for actual rounds). It is directly slotted into the peripherals board.
 - __Motor encoders:__ The encoders give ticks each time they are trigerred by rotation of the motor shaft. Data from it is used for distance calculations. In our case, about 43 ticks corresponds to 1cm. The 4 encoder wires are grouped together and connected to the peripherals board.
 - __Raspberry Pi Camera Module 3 Wide:__ It is used with the Pi for detecting the an obstacles. The camera is secured at four points for greater stability. With only two connection points, the camera could be easily turned due to the material properties of the Camera to Pi 5 connection wire. The higher mounting location allows it to detect obstacles from a large distance (almost 2m!) and plan accordingly. The Wide lens allows for a greater field of view. The NoIR version used to give odd red patches due to the lack of the IR filter in some test cases.
-- __RPLidar A1:__ It is a 2D-LiDAR. It was supposed to be connected to the Pi and give distance all around the robot. However, we could not get it work Raspbian or any other OS. (It worked well with ROS though!) So, it is basically dead weight!
 - Improvements: 
-1. The RPLidar doesn't work well with the standard Raspbian OS on the Pi or with a computer, with values for many angles returned zero or being frozen. It seems to work fine on ROS though. Not sure what the issue is, but resoving this can improve ease of programming.
-2. The 1D LiDARs are quite expensive. Ultrasonic sensors would have done for the sides.
-3. The BNO055 does clock stretching, which causes issues on the I2C buses of most microcontrollers (thankfully not the RP2040). It also has a slight drifting tendency of a few degrees after a round. A IMU that does not have these issues and is easy to use will be more accurate and more flexible in use.
+1. The 1D LiDARs are quite expensive. Ultrasonic sensors would have done for the sides.
+2. The BNO055 does clock stretching, which causes issues on the I2C buses of most microcontrollers (thankfully not the RP2040). It also has a slight drifting tendency of a few degrees after a round. A IMU that does not have these issues and is easy to use will be more accurate and more flexible in use.
 
-The [Bill of Materials](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/blob/main/design-files/Bill%20of%20Materials.md) contains all necessary parts/components and their sources.
+The [Bill of Materials](https://github.com/CmdOptDefeat/fe25/blob/main/design-files/Bill%20of%20Materials.md) contains all necessary parts/components and their sources.
 
 ## Obstacle Management
 
@@ -105,11 +102,12 @@ The [Bill of Materials](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-En
 - First, the region of interest (ROI) is taken as the bottom half of the feed (this is for our camera placement. May vary for other setups).
 - Then, coloured masks (one each for red and green) are applied, followed by OpenCV's controur detection to detect surfaces. Data like position, height and width of the contours may be obtained from the other OpenCV methods.
 - If the contours detected meet the required criteria (like size, height-width ratio), they are classified as obstacles. For our benefit, rectangles are drawn around the obstacles.
+- The basic idea is to treat both possible positions in a row of the 2x3 grid as the same (calculations use the actual values). This greatly simplifies tthe program, since only the outer and inner lanes are used for the driving, while the middle lane is used only for switching between the other two.
 - Using the data available, including obstacle position, yaw and distance travelled, the required steering is calculated to pass the obstacle on the correct side, when not at a turn (Red - right, green - left) on a linear scale
 - For turns:
 1. Starting closer to the inner wall: The seen obstacle before the turn is considered. If turn must to taken sticking to the inner wall, it is immediately taken. If the turn must be taken to get closer to the outer wall, a curve(like a question-mark) is followed. If there is another obstacle of the opposite colour, then the robot the goes back some distance to be able to do the manoeuvre.
-2. Starting closer to the outer wall: TODO
-3. In case of the parking wall being there on every 4th turn, the turning and linear coefficients are changed.
+2. Starting closer to the outer wall: A turn is taken, making it align with the middle lane. Following this, the robot manoeuvres based on the obstacle/s present.
+3. In case of the parking wall being there on every 4th turn, the turning and linear coefficients are changed to get the robot to turn to the adjusted lanes and obstacle position.
 
 Improvements:
 1. The RPLidar might have been used effectively with better drivers with the standard Raspbian OS.
@@ -131,11 +129,10 @@ It will be helpful to refer to the pictures of the completed model for the follo
 6. Mount the rear drive onto the chassis.
 7. Attach 6 pillar screws of length 26mm in the back and 2 of length 22mm in the front (adjacent to the servo)
 8. Attach the middle plate at the 6 rear points, but not at the front. The peripherals board may be screwed on using 4 pillar screws.
-9. Attach the TFLuna LiDARs to the front LiDAR holder section, followed by the RPLiDAR (remember to connect the USB adapter) with 22/24 mm screw pillars. Screw in the front points.
+9. Attach the TFLuna LiDARs to the front LiDAR holder section.
 10. Attach the LiDAR holder section to the front of the chassis.
-11. Attach the additional support section for the LiDAR holder to the 2 front middle plate points and 2 rear RPLidar points.
-12. Screw in the RPLidar's extra micro-USB pin extender to the support section
-13. Attach the two PiCamera holder parts to the rear of the Lidar support section, and screw in the camera (2M screws and nuts are needed)
+11. Attach the additional support section (this used to be used when the RPLidar was also attached to the model) to the 2 front middle plate points and 2 rear RPLidar points.
+13. Attach the two PiCamera holder parts to the rear of the support section, and screw in the camera (2M screws and nuts are needed)
 12. Attach the top-most Raspberry Pi and UPS platform to the rear with screw pillars.
 13. Attach the rear lidar holder with the rear lidar attached to it
 14. Attach the Raspberry Pi with the UPS Hat to the top.
@@ -143,7 +140,7 @@ It will be helpful to refer to the pictures of the completed model for the follo
 
 
 # Peripherals Interface Board
-![Peripherals Interface Board - Top](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/blob/main/repo-assets/edited-photos/periph-board-pcb-top.jpg)
+![Peripherals Interface Board - Top](https://github.com/CmdOptDefeat/fe25/blob/main/repo-assets/edited-photos/periph-board-pcb-top.jpg)
 
 The peripherals interface board goes between the Raspberry Pi and vehicle hardware. The board talks to three 1d TFLuna LiDARs, a 9-axis BNO055 IMU, the motor encoder, the drive motor, and the steering servo. It talks to the Pi over USB.
 
@@ -259,7 +256,7 @@ The Pi communicates with the RP2040 over the serial. When the Pi sends a command
 
 # Open Round
 
-Refer to `sw/peripherals-board/src/drivers/hwrev2/hwrev2_single_lidar_open_round.cpp and .hpp` files for program.
+Refer to [`sw/peripherals-board/src/drivers/hwrev2/hwrev2_single_lidar_open_round.cpp and .hpp`](https://github.com/CmdOptDefeat/fe25/blob/main/sw/peripherals-board/src/drivers/hwrev2/hwrev2_single_lidar_open_round.cpp) files for program.
 The idea to stick to the outer wall, so even with randomisation, the extended inner wall is not hit.
 
 - Uses front LiDAR to detect when to start a turn (if obstacle is close).

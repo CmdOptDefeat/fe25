@@ -36,7 +36,5 @@
 | Cooler for Pi | Raspberry Pi 5 Active Cooler | 1 | Cool the Pi when running | [Product Link](https://robu.in/product/official-raspberry-pi-5-active-cooler) |
 | Picamera | Pi Camera Module 3 - Wide | 1 | Object, colour detection | [Product Link](https://robu.in/product/raspberry-pi-camera-module-3-wide) |
 | Picamera Wire | Raspberry Pi 5 Camera FPC Cable 300mm | 1 | Connects PiCamera to RPi 5 | [Product Link](https://robu.in/product/official-raspberry-pi-5-camera-fpc-cable-300mm/) |
-| 2D LiDAR | SLAMTEC RPLiDAR A1 360° | 1 | Object detection | [Product Link](https://robu.in/product/rp-lidar-a1m8-360-degrees-laser-range-finder/) |
 | USB A - USB C Cable | - | 1 | Connect the Pi to the RP2040 | - |
-| USB A - MicroUSB Cable | - | 1 | Connect the RPLidar to the Pi | - |
 | UPS Hat | WaveShare UPS Hat E | 1 | Used power constant 5V supply to RPi | [Product Link](https://robu.in/product/ups-hat-e-for-raspberry-pi/) |
