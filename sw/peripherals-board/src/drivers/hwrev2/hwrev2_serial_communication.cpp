@@ -83,6 +83,9 @@ void hw_rev_2_SerialCommunication::_sendFormattedData(VehicleData data){
   message += String(_displayCmd.targetYaw);
   message += seperator;
 
+  message += String(data.roundDirectionCW);
+  message += seperator;
+
   message += String(data.instruction);
   message += seperator;
 
