@@ -85,11 +85,12 @@ def drive_data(motor_speed,servo_steering):
     for index in range(0,len(values)): 
         if values[index]!='': values[index] = float(values[index])
     logging.info(values)    # Logging
-    yaw = values[0]
-    distance = -round(values[14]/42, 1)
-    left_dist = int(values[12])
-    front_dist = int(values[9])
-    right_dist = int(values[10])
+    if values[0]!='': yaw = values[0]
+    if values[14]!='': distance = -round(values[14]/42, 1)
+    if values[9]!='': front_dist = int(values[9])
+    if values[10]!='': right_dist = int(values[10])
+    if values[11]!='': back_dist = int(values[11])
+    if values[12]!='': left_dist = int(values[12])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}\n")
     if left_dist < 10: logging.warning("Close to the left wall!")
     elif right_dist < 10: logging.warning("Close to the right wall!")
@@ -203,6 +204,7 @@ def decide_path():
         print("PI Straight")
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed\n\n\n")
+    steering = min(max(0,steering),170)
     prev_obs = current_obs
     return speed, steering
 

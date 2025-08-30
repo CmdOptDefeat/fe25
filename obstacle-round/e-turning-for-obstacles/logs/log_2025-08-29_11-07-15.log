@@ -1,8 +1,0 @@
-2025-08-29 11:07:15,150 - INFO - Camera configuration has been adjusted!
-2025-08-29 11:07:15,151 - INFO - Configuration successful!
-2025-08-29 11:07:16,673 - INFO - Camera started
-2025-08-29 11:07:17,675 - INFO - []
-2025-08-29 11:07:18,544 - INFO - [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 65535.0, 48228.0, 29133.0, 6412.0, -6512.0, 0.0, 3.0, 1.0, 1.0]
-2025-08-29 11:07:18,544 - WARNING - Might crash, too close
-2025-08-29 11:07:18,569 - INFO - Camera stopped
-2025-08-29 11:07:20,391 - INFO - Camera closed successfully.
