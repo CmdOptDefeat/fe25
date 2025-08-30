@@ -151,7 +151,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = PARK;
+  coreControlState = OPEN_ROUND;
 
 }
 

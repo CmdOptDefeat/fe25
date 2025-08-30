@@ -16,7 +16,7 @@ void hw_rev_2_SingleLidarOpenRound::init(ILogger* logger) {
   _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::init()", _debugLogger->INFO, "Initialising drive algorithm");
   
   speed = 225;                      // Initial speed
-  VehicleCommand{.targetSpeed = speed, .targetYaw = 90}; // Set initial speed, steering
+  VehicleCommand{.targetSpeed = speed, .targetYaw = 90}; // Set initial speed, steering  
 
 }
 
@@ -40,17 +40,17 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
         distance = 0;
         turns += 1;
         pos = 90; // Reset servo position
-        targetYaw -= turns * turnDir * 0.5f;
+        targetYaw -= turns * turnDir * 1;
         command.targetYaw = pos;
         _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Stopping turn TY:" + String(targetYaw) + " deg Yaw" + String(yaw) + " deg");   
     }
     else if (abs(difference) > 10 && abs(difference) < 75){ // Continue turning
-        pos = 90 + (60 - (90-abs(difference))/3) * turnDir; // Set servo position for turning
+        pos = 90 + (60 - (90-abs(difference))/2.5f) * turnDir; // Set servo position for turning
         _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "steering" + String(pos) + " " + String(yaw));
     }
     else if(abs(difference) > 75){
 
-      pos = 90 + turnDir * 75;
+      pos = 90 + turnDir * 70;
 
     }
     else{
@@ -67,9 +67,9 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   right_lidarDist = vehicleData.lidar[90];
 
   // Checking to turn
-  if ((front_lidarDist < threshold) and (turning == false) and (abs(difference) < 5) and (left_lidarDist + right_lidarDist > 120)){ 
-    speed = 200;
-    if (turns == 11) speed = 180; // Slow down for final turn
+  if ((turning == false) and (left_lidarDist + right_lidarDist > 120)){ 
+    speed = 210;
+    if (turns == 11) speed = 200; // Slow down for final turn
     turning = true;
     if (turnDir == 1) pos = 90 + 47; // Set servo position for turning
     else if (turnDir == -1) pos = 90 - 55;
@@ -128,7 +128,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
 
   if(turnDir == -1 && pos != 90){
 
-    pos -= 10;
+    pos -= 20;
 
   }
 

@@ -19,7 +19,7 @@ VehicleConfig hwrev2_getConfig(){
   cfg.pinConfig.motorDriverDirB             = 27;
   cfg.pinConfig.motorDriverPWM              = 28;
   cfg.pinConfig.motorDriverStandby          = 15;
-  cfg.pinConfig.steeringServo               = 7;
+  cfg.pinConfig.steeringServo               = 2;
 
   cfg.pinConfig.motorEncoderA               = 13;
   cfg.pinConfig.motorEncoderB               = 14;
