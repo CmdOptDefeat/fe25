@@ -151,7 +151,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = OPEN_ROUND;
+  coreControlState = PARK;
 
 }
 
@@ -167,7 +167,7 @@ void loop(){
 
   // Get fresh data from sensors (manually set round direction bool based on what we've found out before)
   coreVehicleData = sensorManager.update();
-  coreVehicleData.roundDirectionCW = coreRoundDirCW;
+  coreVehicleData.roundDirectionCW = true;
   coreVehicleData.instruction = coreVehicleInstructionToPi;
 
   // Update state machine
@@ -408,7 +408,7 @@ void coreGetOrientation(){
 
   coreRoundDirCW = rightDist > leftDist;
 
-  coreControlState = UNPARK;  // Move on to unparking after figuring out direction
+  coreControlState = PARK;  // Move on to unparking after figuring out direction
 
   debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "Set coreRoundDirCW to " + String(coreRoundDirCW ? "true" : "false"));  // not sure why +ing a set string and a ternary returns only the ternary eval, wrapping ternary in String() fixes it
 

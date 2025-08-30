@@ -7,6 +7,7 @@
  #pragma once
 
 #include <cstdint>
+#include <Adafruit_BNO055.h>
 
 class PowertrainDriver;
 
@@ -101,6 +102,12 @@ struct ControlConfig{
   float servoCommandToOutputRatio = 1; // 1 to avoid division by zero errors
 };
 
+struct CalibrationConfig{
+
+  adafruit_bno055_offsets_t imuOffsets;
+
+};
+
 /**
  * @brief One Config Struct To Rule Them All
  */
@@ -111,5 +118,6 @@ struct VehicleConfig{
   ConstantsConfig constantsConfig;
   AddressConfig addressConfig;
   ControlConfig controlConfig;
+  CalibrationConfig calibrationConfig;
 
 };

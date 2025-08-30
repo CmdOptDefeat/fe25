@@ -20,9 +20,7 @@ public:
     TURN0,
     STRAIGHT1,
     STRAIGHT2,
-    TURN1,
-    STRAIGHTEN_OUT,
-    STOP
+    TURN1
   
   };
 
@@ -32,12 +30,14 @@ private:
   VehicleData _data;
   VehicleCommand _cmd;
   hw_rev_2_park_state _state;
-  const int16_t _absBaseSpeed = 200;
+  const int16_t _absBaseSpeed = 120;
+  const int16_t _absTurnSpeed = 300;
+  const int16_t MAX_LEFT_TURN = 10;
+  const int16_t MAX_RIGHT_TURN = 170;
   void _straight0();
   void _turn0();
   void _straight1();
   void _straight2();
   void _turn1();
-  void _straightenOut();
 
 };
