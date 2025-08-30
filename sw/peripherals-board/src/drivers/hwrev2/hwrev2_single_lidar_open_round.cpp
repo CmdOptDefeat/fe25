@@ -15,7 +15,7 @@ void hw_rev_2_SingleLidarOpenRound::init(ILogger* logger) {
   _debugLogger = logger;
   _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::init()", _debugLogger->INFO, "Initialising drive algorithm");
   
-  speed = 225;                      // Initial speed
+  speed = 1024;                      // Initial speed
   VehicleCommand{.targetSpeed = speed, .targetYaw = 90}; // Set initial speed, steering  
 
 }
@@ -29,12 +29,22 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   distance = vehicleData.encoderPosition / 43;
   
   // Stopping turn logic
-  float difference = turnDir * (targetYaw - yaw);
-  if (difference > 180) difference = 360 - difference;
-  else if (difference < -180) difference = 360 + difference;
+  //float difference = -turnDir * (targetYaw - yaw);
+  //if (difference > 180) difference = 360 - difference;
+  //else if (difference < -180) difference = 360 + difference;
+
+  float difference = targetYaw - yaw;
+
+  if(difference > 180){
+    difference -= 360;
+  }
+  else if(difference < -180){
+    difference += 360;
+  }
+
   if (turning == true){
     if (abs(difference) <= 6.5f){   // Return to straight after turning for ~89°
-        speed = 225;
+        speed = 400;
         turning = false;
         encoderValue = 0;
         distance = 0;
@@ -68,28 +78,34 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
 
   // Checking to turn
   if ((turning == false) and (left_lidarDist + right_lidarDist > 120)){ 
-    speed = 210;
-    if (turns == 11) speed = 200; // Slow down for final turn
+    speed = 1024;
+    if (turns == 11) speed = 400; // Slow down for final turn
     turning = true;
-    if (turnDir == 1) pos = 90 + 47; // Set servo position for turning
-    else if (turnDir == -1) pos = 90 - 55;
+    if (turnDir == 1) pos = 90 + 60; // Set servo position for turning
+    else if (turnDir == -1) pos = 90 - 65;
+
+  /*
     targetYaw = yaw + turnDir * 90;
     if (targetYaw > 360) targetYaw = targetYaw - 360;
     else if (targetYaw < 0) targetYaw = 360 + targetYaw;
 
-    if ((turns % 4 == 0) and (turnDir == -1)) targetYaw = 270; // First turn in anticlockwise
+    //if ((turns % 4 == 0) and (turnDir == -1)) targetYaw = 270; // First turn in anticlockwise
 
     if (targetYaw > 75 && targetYaw < 105) targetYaw = 90;
     else if (targetYaw > 165 && targetYaw < 195) targetYaw = 180;
     else if (targetYaw > 255 && targetYaw < 290) targetYaw = 270;
     else if (targetYaw > 345 or targetYaw < 15) targetYaw = 0;
+    
+    */
+    targetYaw = (((turns + 1) * (90 * turnDir)) + 360) % 360;
+
     _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Start turn " + String(targetYaw) + " deg " + String(front_lidarDist));
 
   }
 
   // Not turning - Gyro straight follower
   if(turning == false){
-    speed = 225;
+    speed = 1024;
     correction = 0;
     error = round(targetYaw - yaw);
 
