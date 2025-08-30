@@ -41,7 +41,7 @@ if True:    # Logging, video setup
     os.makedirs(video_dir, exist_ok=True)
     output_path = os.path.join(video_dir, f"video_{now.strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
 
-    fps = 20
+    fps = 9
     frame_size = (1280, 720)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Format
     video_out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
@@ -64,7 +64,7 @@ if True:    # Variable declarations
     upper2_black = np.array([49, 175, 90])
     # The pink parking pieces also show up as red at home!
 
-    start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
+    start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
 
     # These are currently seen obstacles
     red_obs = []
@@ -231,10 +231,10 @@ def decide_turn_path():
             turning = False
             turns += 1
     
-    # TODO no obstacle
     elif start_pos == 'inner':              # Starting turn near the inner wall
         if turn_obs[1] == '' and colour != '': turn_obs = current_obs
         if turn_obs[1] == 'red' and turning:
+            # Red obstacle seen as turn obstacle
             if turn_dir == -1:
                 if turn_forward == 0: 
                     turn_forward = 1
@@ -244,6 +244,7 @@ def decide_turn_path():
                     turn_forward = 2
             elif turn_dir == 1: steering = 165
         elif turn_obs[1] == 'green' and turning:
+            # Green obstacle seen as turning obstacle
             if turn_dir == 1:
                 if turn_forward == 0: 
                     turn_forward = 1
@@ -253,9 +254,15 @@ def decide_turn_path():
                     turn_forward = 2
             elif turn_dir == -1: steering = 3
         elif turning and turn_obs[1] == '':
-            # TODO When no obstacle
-            pass
+            # No obstacle
+            if turn_forward == 0: 
+                turn_forward = 1
+                steering = 15
+            if turn_forward == 1 and abs(error-90)>5: 
+                steering = 165
+                turn_forward = 2
         elif not turning:
+            # PI after turning is completed
             steering = pi_control(error)
 
         if turning and ((abs(error)<10 and turn_forward == 2) or (abs(error)<25 and turn_forward == 0)):       # End of turn determination

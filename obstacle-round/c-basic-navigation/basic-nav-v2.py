@@ -203,6 +203,7 @@ def decide_path():
         print("PI Straight")
     if prev_obs[1]!='' and (colour!=prev_obs[1] or y - prev_obs[0][1] > 10):
         print("\n\n\n\tObstacle passed\n\n\n")
+    steering = min(max(0,steering),170)
     prev_obs = current_obs
     return speed, steering
 

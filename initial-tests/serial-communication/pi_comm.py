@@ -21,7 +21,7 @@ def main():
             steering = float(parts[1])
 
             # Send command to RP2040
-            command = f"{speed},{steering},1\n"
+            command = f"{speed},{steering}\n"
             ser.write(command.encode())
 
             # Wait for response from RP2040
@@ -31,10 +31,10 @@ def main():
             values.pop()
             yaw = float(values[0])
             distance = -float(values[14]) / 3
-            front_dist = int(values[9])
-            right_dist = int(values[10])
-            back_dist = int(values[11])
-            left_dist = int(values[12])
+            front_dist = values[9]
+            right_dist = values[10]
+            back_dist = values[11]
+            left_dist = values[12]
             print(f"Received Data - Yaw: {yaw}, Distance: {distance} \n\tLeft: {left_dist}, Front: {front_dist}, Right: {right_dist} Back: {back_dist}")
 
 
