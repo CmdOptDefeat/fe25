@@ -188,6 +188,7 @@ void loop(){
 
 }
 
+
 /**
  * @brief Function for printing all collected vehicle data without names for use with SerialPlot
  * @note Do not modify order or add name print to variables 
@@ -460,7 +461,9 @@ void coreSafe(){
 
   motor.driveMotor(0, false);
   motor.disarmMotor();
-  steering.steer(90);
+  steering.steer(0);
+
+  while(true);  // temp solution to fix servo jitter
 
 }
 
@@ -522,7 +525,7 @@ void coreSetLEDColor(CoreControlState state){
   switch(state){
 
     case GET_ORIENTATION:
-      rgbLED.setStaticColor(rgbLED.GREEN);
+      rgbLED.setStaticColor(rgbLED.CYAN);
       break;
 
     case DRIVE_FROM_PI:
@@ -534,6 +537,10 @@ void coreSetLEDColor(CoreControlState state){
       break;
 
     case PARK:
+      rgbLED.setStaticColor(rgbLED.GREEN);
+      break;
+
+    case UNPARK:
       rgbLED.setStaticColor(rgbLED.GREEN);
       break;
 

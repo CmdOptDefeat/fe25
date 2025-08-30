@@ -40,7 +40,7 @@ private:
 
     // About IMU
     float yaw;
-    uint16_t targetYaw = 0;
+    float targetYaw = 0;
     int startYaw = 0;
 
     unsigned long startMillis;
@@ -49,7 +49,7 @@ private:
 
 
     // About Lidar
-    int threshold = 74;         // The distance at which the robot should start turning
+    int threshold = 80;         // The distance at which the robot should start turning
     int16_t front_lidarDist;
     int16_t left_lidarDist;
     int16_t right_lidarDist;

@@ -12,7 +12,7 @@ Adafruit_NeoPixel pixel(1, PIN_RGB_LED, NEO_RGB + NEO_KHZ800);
 unsigned long prevCommandSendTime = 0;
 unsigned long commandSendIntervalMS = 10;
 
-hwrev2_rf24_telem_block1 dataBlock1;
+hwrev2_rf24_telem_block1 telemBlock1;
 hwrev2_rf24_cmd_block1 cmdBlock1;
 
 void blinkLED();
@@ -70,9 +70,9 @@ void loop(){
   uint8_t pipe;
   if(radio.available(&pipe)){
 
-    radio.read(&dataBlock1, sizeof(dataBlock1));
-
-    radio.writeAckPayload(pipe, &cmdBlock1, sizeof(cmdBlock1));
+    radio.read(&telemBlock1, sizeof(telemBlock1));
+    // Disable command code, don't have time to debug
+    //radio.writeAckPayload(pipe, &cmdBlock1, sizeof(cmdBlock1));
 
     printDataStruct();
 
@@ -96,31 +96,31 @@ void ledOff(){
 
 void printDataStruct(){
 
-  Serial.print(dataBlock1.millis);
+  Serial.print(telemBlock1.millis);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.oriX);
+  Serial.print(telemBlock1.oriX);
   Serial.print(',');
 
-  Serial.print(dataBlock1.lidarLeft);
+  Serial.print(telemBlock1.lidarLeft);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.lidarFront);
+  Serial.print(telemBlock1.lidarFront);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.lidarRight);
+  Serial.print(telemBlock1.lidarRight);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.lidarBack);
+  Serial.print(telemBlock1.lidarBack);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.commandedSpeed);
+  Serial.print(telemBlock1.commandedSpeed);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.commandedSteer);
+  Serial.print(telemBlock1.commandedSteer);
   Serial.print(',');  
 
-  Serial.print(dataBlock1.roundDirectionCW);
+  Serial.print(telemBlock1.roundDirectionCW);
   Serial.print(',');  
 
   Serial.println();
