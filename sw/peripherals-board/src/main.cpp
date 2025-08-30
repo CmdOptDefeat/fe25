@@ -188,6 +188,7 @@ void loop(){
 
 }
 
+
 /**
  * @brief Function for printing all collected vehicle data without names for use with SerialPlot
  * @note Do not modify order or add name print to variables 

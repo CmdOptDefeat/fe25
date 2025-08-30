@@ -12,7 +12,17 @@ void hw_rev_2_RF24Communication::init(ILogger *logger){
 
   _logger = logger;
 
-  _radio->begin(&SPI1);
+  if(!_radio->begin(&SPI1)){
+
+    _logger->sendMessage("hw_rev_2_RF24Communication::init", _logger->ERROR, "RF24 init failed");
+
+  }
+  else{
+
+    _logger->sendMessage("hw_rev_2_RF24Communication::init", _logger->ERROR, "RF24 init failed");
+
+  }
+
   _radio->setPALevel(RF24_PA_HIGH);
   _radio->setDataRate(RF24_2MBPS);
   _radio->setAutoAck(true);
@@ -40,7 +50,15 @@ VehicleCommand hw_rev_2_RF24Communication::update(VehicleData data, VehicleComma
 
   _radio->openWritingPipe(TLM_PIPE_0);
   _radio->stopListening();
-  _radio->write(&telemBlock1, sizeof(telemBlock1));
+  
+  if(!_radio->write(&telemBlock1, sizeof(telemBlock1))){
+    _logger->sendMessage("hw_rev_2_RF24Communication::update", _logger->ERROR, "RF24 write failed. Code execution will continue.");
+  }
+  else{
+    _logger->sendMessage("hw_rev_2_RF24Communication::update", _logger->INFO, "Successfully sent telemetry over RF24.");
+  }
+
+  /* // Command receive code is disabled, don't have time to debug
 
   uint8_t ackPipeNum;
   if(_radio->available(&ackPipeNum)){
@@ -48,12 +66,18 @@ VehicleCommand hw_rev_2_RF24Communication::update(VehicleData data, VehicleComma
     _radio->read(&cmdBlock1, sizeof(cmdBlock1));
     returnCommand.targetSpeed = cmdBlock1.targetSpeed;
     returnCommand.targetYaw = cmdBlock1.targetYaw;
+    _logger->sendMessage("hw_rev_2_RF24Communication::update", _logger->INFO, "Successfully received command over RF24.");
 
   }
   else{
+
     returnCommand.targetSpeed = 0;
     returnCommand.targetYaw = 90;
+    _logger->sendMessage("hw_rev_2_RF24Communication::update", _logger->ERROR, "RF24 command read failed. Code execution will continue.");
+
   }
+
+  */
 
   return returnCommand;
   
