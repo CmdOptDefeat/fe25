@@ -64,7 +64,7 @@ if True:    # Variable declarations
     upper2_black = np.array([49, 175, 90])
     # The pink parking pieces also show up as red at home!
 
-    start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
+    start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
 
     # These are currently seen obstacles
     red_obs = []
@@ -94,12 +94,12 @@ def drive_data(motor_speed,servo_steering):
     for index in range(0,len(values)): 
         if values[index]!='': values[index] = float(values[index])
     logging.info(values)    # Logging
-    yaw = values[0]
-    distance = -round(values[14]/42, 1)
-    front_dist = int(values[9])
-    right_dist = int(values[10])
-    back_dist = int(values[11])
-    left_dist = int(values[12])
+    if values[0]!='': yaw = values[0]
+    if values[14]!='': distance = -round(values[14]/42, 1)
+    if values[9]!='': front_dist = int(values[9])
+    if values[10]!='': right_dist = int(values[10])
+    if values[11]!='': back_dist = int(values[11])
+    if values[12]!='': left_dist = int(values[12])
     print(f"Received Data - Yaw: {yaw}, Distance: {distance-start_dist} Left: {left_dist}, Front: {front_dist}, Right: {right_dist}, Back: {back_dist}\n")
     if left_dist < 10: logging.warning("Close to the left wall!")
     elif right_dist < 10: logging.warning("Close to the right wall!")
