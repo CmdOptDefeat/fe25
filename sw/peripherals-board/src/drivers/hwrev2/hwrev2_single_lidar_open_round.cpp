@@ -34,16 +34,11 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   //else if (difference < -180) difference = 360 + difference;
 
   float difference = targetYaw - yaw;
-
-  if(difference > 180){
-    difference -= 360;
-  }
-  else if(difference < -180){
-    difference += 360;
-  }
+  if(difference > 180) difference -= 360;
+  else if(difference < -180) difference += 360;
 
   if (turning == true){
-    if (abs(difference) <= 6.5f){   // Return to straight after turning for ~89°
+    if (abs(difference) <= 6.5f){   // Return to straight after turning for ~83.5°
         speed = 400;
         turning = false;
         encoderValue = 0;
@@ -54,21 +49,12 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
         command.targetYaw = pos;
         _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Stopping turn TY:" + String(targetYaw) + " deg Yaw" + String(yaw) + " deg");   
     }
-    else if (abs(difference) > 10 && abs(difference) < 75){ // Continue turning
+    else if (abs(difference) > 10 && abs(difference) < 75){ // 75° to 10°
         pos = 90 + (60 - (90-abs(difference))/2.5f) * turnDir; // Set servo position for turning
         _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "steering" + String(pos) + " " + String(yaw));
     }
-    else if(abs(difference) > 75){
-
-      pos = 90 + turnDir * 70;
-
-    }
-    else{
-
-      pos = 90 + (turnDir * 20);
-
-    }
-
+    else if(abs(difference) > 75) pos = 90 + turnDir * 70; //90° to 75°
+    else pos = 90 + (turnDir * 20);   //10° to 6.5°
   }
 
   // Get data from LiDARs
@@ -76,6 +62,19 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   left_lidarDist = vehicleData.lidar[270];
   right_lidarDist = vehicleData.lidar[90];
 
+  if (turnDir == 0)
+  { // Determine turn direction based on side LiDARs
+    if (left_lidarDist - right_lidarDist > 100)
+    {
+      turnDir = -1; // Turning to left
+      threshold = 78;
+    }
+    else if (left_lidarDist - right_lidarDist < -100)
+    {
+      turnDir = 1; // Turning to right
+      threshold = 74;
+    }
+  }
   // Checking to turn
   if ((turning == false) and (left_lidarDist + right_lidarDist > 120)){ 
     speed = 1024;
@@ -83,8 +82,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     turning = true;
     if (turnDir == 1) pos = 90 + 60; // Set servo position for turning
     else if (turnDir == -1) pos = 90 - 65;
-
-  /*
+  /* Old logic to set target yaw
     targetYaw = yaw + turnDir * 90;
     if (targetYaw > 360) targetYaw = targetYaw - 360;
     else if (targetYaw < 0) targetYaw = 360 + targetYaw;
@@ -97,7 +95,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     else if (targetYaw > 345 or targetYaw < 15) targetYaw = 0;
     
     */
-    targetYaw = (((turns + 1) * (90 * turnDir)) + 360) % 360;
+    targetYaw = ((turnDir * (turns + 1) * 90) + 360) % 360;
 
     _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Start turn " + String(targetYaw) + " deg " + String(front_lidarDist));
 
@@ -122,17 +120,6 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
 
   } 
 
-  if (turnDir == 0){ // Determine turn direction based on side LiDARs
-    if (left_lidarDist - right_lidarDist > 100){ 
-        turnDir = -1; // Turning to left
-        threshold = 78;
-    }
-    else if (left_lidarDist - right_lidarDist < -100){ 
-        turnDir = 1; // Turning to right
-        threshold = 74;
-    }
-  }
-
   //if ((turnDir == 0) && (left_lidarDist > left_startDist + 60)) turnDir = -1; // Turning to left
   //else if ((turnDir == 0) && (right_lidarDist > right_startDist + 60)) turnDir = 1; // Turning to right
   if (turns == 12){
@@ -142,15 +129,11 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Completed 3 rounds");
   }
 
-  if(turnDir == -1 && pos != 90){
-
-    pos -= 20;
-
-  }
+  if(turnDir == -1 && pos < 100 && pos > 80) pos -= 20;
 
   command.targetSpeed = speed;
   // This sets servo position not yaw since this system is currently on direct control
-  // Ref .hpp file with line 19 - bool isDirectControl() override { return true; }
+  // Ref .hpp file with line 19 - `bool isDirectControl() override { return true; }`
   command.targetYaw = int(pos);
 
   return command;

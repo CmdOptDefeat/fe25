@@ -26,7 +26,7 @@ private:
 
     // About driving
     int dir = 1;
-    int16_t speed = 225;  // Motor PWM speed 
+    int16_t speed = 512;  // Motor PWM speed 
     int lastEncoded = 0; 
     long encoderValue = 0;
     float distance = 0.0;
@@ -41,12 +41,9 @@ private:
     // About IMU
     float yaw;
     float targetYaw = 0;
-    int startYaw = 0;
 
     unsigned long startMillis;
     unsigned long currentMillis;
-    const unsigned long period = 200;
-
 
     // About Lidar
     int threshold = 90;         // The distance at which the robot should start turning
