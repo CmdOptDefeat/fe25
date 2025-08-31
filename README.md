@@ -164,18 +164,20 @@ The codebase is designed to be modular, with easily swappable drivers for hardwa
 Drivers are in `/src/drivers`, Interfaces are in `/src/interfaces/`, and utilities are in `/src/utils/`.
 
 ### Code Development Standards
-To ensure easily testable, upgradeable, and clean code, a few standards were adhered to when writing code for the interface board.
+To ensure easily testable, upgradeable, and clean code, the following standards were decided for writing code for the interface board.
+> [!NOTE]
+> Due to time constraints, not all of these could be adhered to during final development
 
 - `main.cpp` must be as clean as possible.
-  - Logic and code flow must be easy to understand.
+- Logic and code flow must be easy to understand.
 - All hardware-specific things should be done inside a driver.
 - Drivers must take in a standard unit as their input.
-  - Drivers must not take in [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)).
-
+- Drivers must not take in [magic numbers](https://en.wikipedia.org/wiki/Magic_number_(programming)).
 
 ### Drivers
 > [!NOTE]
 > Hardware revision 1 drivers are incomplete, as the peripherals baord codebase was partly written when the switch from the prototype interface and the PCB occured, and drivers from that point on were only for the PCB (hardware revision 2).
+
 A list of implemented drivers:
 - `hwrev2_imu` : Implements `ISensor`. Driver for the BNO055. Gets orientation data processed by the BNO055's internal microcontroller.
 - `hwrev2_lidar` : Implements `ISensor`. Driver for the TFLuna LiDARs. Returns a [0, 259] of distance data. The three LiDARs are mapped to `0`, `90`, and `270`. (This is a remnant of the original plan of connecting the RPLidar to the peripherals board, instead of to the Pi.)
@@ -186,10 +188,11 @@ A list of implemented drivers:
 - `hwrev2_target_control` : Implements `ITargetControl`. Takes in a `VehicleCommand`, and either passes it directly through to the `ISteeringDriver` and `IMotorDriver`, or passes the command through a PID controller first.
 - `hwrev2_uart_logger` :  Implements `ILogger`, Takes in a sender, message type, and a message string
 - `hwrev2_vehicle_speed` : Implements `ISensor`. Gets vehicle distance from the motor encoder. Calculates speed using time between pulses.
+  TODO: unparking and parking drivers
 
 ### Interfaces
 
-Interfaces are virtual classes which define certain functions. Drivers implement these classes. Code calls functions defined in the interface virtual class.
+Interfaces are virtual classes which define certain functions. Drivers implement these classes. Code calls functions defined in the virtual interface class.
 
 - `IDriveAlgorithm` : Takes in a `VehicleData` object, and returns a `VehicleCommand` object.
 - `ILogger` : Constructs a message and prints it out on a UART bus. Takes in a sender string, a log type (information, warning, error) and the message.
@@ -219,6 +222,7 @@ Managers are classes that handle certain aspects of the vehicle. Certain structs
 # Raspberry Pi System
 
 The Raspberry Pi system handles most tasks for the obstacle round, including unparking, obstacle detection and navigation.
+TODO: it doesn't handle unparking, update this section
 
 ## Raspbian Setup
 
@@ -243,7 +247,7 @@ Run the following commands in the terminal
 
 ## Adding Programs to Startup
 
-The method used here involves running executables on startup. Refer [`initial-tests/startup-test/`](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/initial-tests/startup-test) for the code.
+The method used here involves running executables on startup. Refer [`initial-tests/startup-test/`](https://github.com/cmdoptdefeat/fe25/tree/main/initial-tests/startup-test) for the code.
 1. Create the python file
 2. Create a launcher script, like the one in the initial test file, that ends in `.sh`. Ensure the launcher is working with `./(launcher-name).sh` in its directory.
 3. In the launcher script, navigate to the directory of the python file and run it with `sudo python3 (file-name).py`. Then return to user directory

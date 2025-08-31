@@ -17,7 +17,7 @@ public:
     void init(ILogger* logger) override;
     VehicleCommand drive(VehicleData vehicleData) override;
     bool isDirectControl() override {return true;}
-    bool isFinished() override {return completed;}       // THIS IS VERY BAD AND WILL BREAK AT THE SLIGHTEST TOUCH
+    bool isFinished() override {return completed;}      
 
 private:
     VehicleConfig _config;
@@ -49,13 +49,10 @@ private:
 
 
     // About Lidar
-    int threshold = 80;         // The distance at which the robot should start turning
+    int threshold = 90;         // The distance at which the robot should start turning
     int16_t front_lidarDist;
     int16_t left_lidarDist;
     int16_t right_lidarDist;
-    int16_t front_startDist = vehicleData.lidar[0];
-    int16_t left_startDist = vehicleData.lidar[270];
-    int16_t right_startDist = vehicleData.lidar[90];
 
     // About Gyro straight follower
     int correction = 0;
