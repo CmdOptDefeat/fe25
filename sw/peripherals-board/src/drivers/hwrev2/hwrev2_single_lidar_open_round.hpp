@@ -26,7 +26,7 @@ private:
 
     // About driving
     int dir = 1;
-    int16_t speed = 175;  // Motor PWM speed 
+    int16_t speed = 180;  // Motor speed in PWM
     int lastEncoded = 0; 
     long encoderValue = 0;
     float distance = 0.0;
