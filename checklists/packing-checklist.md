@@ -15,6 +15,7 @@
 - Spare USB-A wire to cut
 - Spare 21700 batteries x4
 - Spare Lidar cables x2
+- Gears x2
 - Spare USB-A to USB-C wire for serial communication
 - Spares of all 3D-printed parts
 - Spare N20 motor x2
