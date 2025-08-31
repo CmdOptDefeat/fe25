@@ -162,6 +162,8 @@ void setup(){
  */
 void loop(){
 
+  // Create gap between loop prints
+  debugLogger.sendString("\n\n\n");
   // Handle any serial input over debug port (disable for competition compile?)
   debugLogger.handleInput();
 

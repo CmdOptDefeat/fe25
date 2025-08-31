@@ -26,7 +26,7 @@ private:
 
     // About driving
     int dir = 1;
-    int16_t speed = 512;  // Motor PWM speed 
+    int16_t speed = 175;  // Motor PWM speed 
     int lastEncoded = 0; 
     long encoderValue = 0;
     float distance = 0.0;
@@ -46,7 +46,7 @@ private:
     unsigned long currentMillis;
 
     // About Lidar
-    int threshold = 90;         // The distance at which the robot should start turning
+    int threshold = 100;         // The distance at which the robot should start turning
     int16_t front_lidarDist;
     int16_t left_lidarDist;
     int16_t right_lidarDist;
