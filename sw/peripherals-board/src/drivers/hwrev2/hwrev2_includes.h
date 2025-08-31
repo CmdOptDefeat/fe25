@@ -18,3 +18,4 @@
 #include <hwrev2_park.hpp>
 #include <hwrev2_rgbled.hpp>
 #include <hwrev2_unpark.hpp>
+#include <hwrev2_state_machine_open_round.hpp>
