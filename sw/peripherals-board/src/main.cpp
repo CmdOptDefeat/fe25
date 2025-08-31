@@ -151,7 +151,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = GET_ORIENTATION;
+  coreControlState = OPEN_ROUND;
 
 }
 
