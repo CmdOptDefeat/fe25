@@ -62,7 +62,7 @@ private:
 
     bool completed = false;          // Indicates if the 3 rounds are completed
 
-    const int PID_TURN_LIMIT_ABS = 84;
+    const int PID_TURN_LIMIT_ABS = 85;
     bool double_extended_wall = false;
-    bool back_turn = false;
+    bool gone_back = false;
 };
