@@ -39,6 +39,8 @@ VehicleConfig hwrev2_getConfig(){
   cfg.pinConfig.uart0RX                     = 1;
   cfg.pinConfig.uart0TX                     = 0;
 
+  cfg.pinConfig.lidarMotorPWM               = 29;
+
   cfg.pinConfig.rgbLed                      = 16;
 
   cfg.limitsConfig.maxForwardSpeed          = 500;
