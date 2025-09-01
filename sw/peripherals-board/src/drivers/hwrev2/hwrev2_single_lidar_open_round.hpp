@@ -48,12 +48,13 @@ private:
 
     // About Lidar
     int threshold = 95;         // The distance at which the robot should start turning
-    int16_t front_lidarDist;
-    int16_t left_lidarDist;
-    int16_t right_lidarDist;
-    int16_t front_start_dist;
-    int16_t right_start_dist;
-    int16_t left_start_dist;
+    int front_lidarDist;
+    int left_lidarDist;
+    int right_lidarDist;
+    int front_start_dist = 1024;
+    int right_start_dist = 1024;
+    int left_start_dist = 1024;
+
     // About Gyro straight follower
     int correction = 0;
     float error = 0;
@@ -61,6 +62,7 @@ private:
 
     bool completed = false;          // Indicates if the 3 rounds are completed
 
-    const int PID_TURN_LIMIT_ABS = 84;
+    const int PID_TURN_LIMIT_ABS = 85;
+    bool double_extended_wall = false;
     bool gone_back = false;
 };

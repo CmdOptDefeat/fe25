@@ -21,6 +21,7 @@
 - Spare N20 motor x2
 - Spare servo motor - MG996R x2
 - Jumper wires
+- Powerbanks
 
 ## Adbhut
 - USB-A to USB-C cable
