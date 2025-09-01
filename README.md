@@ -25,6 +25,13 @@ This project is our official entry for the Future Engineers category at the Worl
 Note: The whole readme file is massive.
 See [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#peripherals-interface-board) for more details about the peripherals interface board, and [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#raspberry-pi-system) for details about the RPi 5 and its setup. [System architecture](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#system-architecture) includes information about the [robot and mobility](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#mobility), [power system](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#power), [sensors](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#sensors), [obstacle management](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#obstacle-management) and [parking and unparking](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#unparking-and-parking).
 
+Some photos of the robot - 
+<br><br>
+![Top view](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0007.HEIC)
+![Side view](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0005.HEIC)
+<br><br>
+All photos may be found [here](https://github.com/CmdOptDefeat/fe25/tree/main/repo-assets/raw-photos/robot)
+
 # Hardware Components
 - __Compute:__ Raspberry Pi 5 (main computer), Raspberry Pi 2040 (Waveshare RP2040-Zero, real-time control)
 - __Sensors:__ 1D LiDAR, IMU, rotary encoders, Picamera
@@ -58,11 +65,12 @@ See [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#perip
 ## Mobility
 
 - A commercially available metal [chassis base](https://www.elecrow.com/4wd-smart-car-robot-chassis-for-arduino-servo-steering.html) has been used with custom designed and printed parts. This chassis was selected mainly for its good steering system, mobility and customisabilty (there are lots of through holes through the base-frame). While the steering was retained, the remaining parts were custom designed.
-- A link based steering system is used in the robot with a link-rod between the front wheel joints and another between a wheel joint and the servo. This steering system has been taken from the chassis without much modification due to its precision. A MG996R 180° servo has been used for the steering due to its high torque and accuracy, which improve mobility. 
+- A link based steering system is used in the robot with a link-rod between the front wheel joints and another between a wheel joint and the servo. This steering system has been taken from the chassis without much modification due to its precision. A MG996R 180° servo has been used for the steering due to its high torque and accuracy, which improve mobility. The turn radius is around 32-33cm.
+- ![Steering System](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0020.HEIC)
 - A single axle rear drive train is used for driving is used. A 200RPM N20 motor is used due to its speed and decent torque. A 1:1 gear ratio is used with a pair of brass gears. Bearings are used on the rear axle for smooth movement. A custom [rear drive holder](https://github.com/CmdOptDefeat/fe25/blob/main/design-files/N20%20Motor%20Holder.stl) is used to house all these parts.
 - Both the servo and N20 motors are connected to the peripherals board. The servo is controlled using the standard library, while PWM is used for speed control of the motor.
-- Turning Radius: Optimized for narrow WRO track corners, and is 32-33 cm.
-- Build Choice Reasoning: Offers realistic car-like dynamics, ideal for FE challenge simulation.
+- ![Rear Drive](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0023.HEIC)
+- This robot offers realistic car-like dynamics, ideal for FE challenge simulation.
 [Design files](https://github.com/CmdOptDefeat/fe25/tree/main/design-files) contains all the other custom 3D-Design files (created on [TinkerCAD](https://www.tinkercad.com)) for mounting various compnents and systems onto the base chassis and one another.
 [Robot assembly](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#robot-assembly) instructions are below.
 - Improvements: 
@@ -79,7 +87,7 @@ See [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#perip
 - The peripherals board gets power directly from the UPS Hat through a USB-A cable that has been cut to get the power wires. This powers only the rear motor and steering servo.
 - Improvements:
 1. The UPS Hat that we are using has a weird anomaly. Although the batteries will have good voltage output and detected capacity, it will show the net remaining capacity to be very low. We have edited the code of the UPS library to not allow it run `sudo poweroff` when it misdetects such a situation.
-2. Maybe not have the small switch on the board; closing it will cause these 2 systems to be connected, which could lead to some bad outcomes!
+Additiionally, charging of batteries when the Pi is off does not seem to be detected. 
 
 ## Sensors
 
@@ -97,6 +105,7 @@ The [Bill of Materials](https://github.com/CmdOptDefeat/fe25/blob/main/design-fi
 ## Obstacle Management
 
 - This is done mainly using the camera feed from the PiCamera 3 Wide. The NoIR version tends to give red spot in places with lots of light due to lack of IR filter, which made it incompatible for this case.
+- The obstacle management sections were not able to be integrated with one another in time, but the various sections do work independently.
 - The OpenCV library (in Python3) is used for all the image manipulation and data extrapolation. HSV mode has been used for all the detecting, while images arer displayed in RGB. Sometimes, red may appear as blue due to use of BGR format used by camera to record. This is of no consequence, since it does not affect detection itself.
 - Initially, the colour ranges for the obstacles, parking walls and side walls are identified. Interestingly, in our case, the 'magenta' parking walls show up as pure red.
 - First, the region of interest (ROI) is taken as the bottom half of the feed (this is for our camera placement. May vary for other setups).
@@ -150,6 +159,8 @@ It will be helpful to refer to the [pictures of the construction](https://github
 ![Peripherals Interface Board - Top](https://github.com/CmdOptDefeat/fe25/blob/main/repo-assets/edited-photos/periph-board-pcb-top.jpg)
 
 The peripherals interface board goes between the Raspberry Pi and vehicle hardware. The board talks to three 1d TFLuna LiDARs, a 9-axis BNO055 IMU, the motor encoder, the drive motor, and the steering servo. It talks to the Pi over USB.
+
+![Peripherals Board on the Robot](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0016.HEIC)
 
 ## Hardware
 The board is a two-layer, 1.6 mm thick PCB designed in [KiCad](https://kicad.org) and manufactured by [Robu](https://robu.in).
