@@ -64,7 +64,7 @@ if True:    # Variable declarations
     upper2_black = np.array([49, 175, 90])
     # The pink parking pieces also show up as red at home!
 
-    start_pos = 'outer'     # inner-closer to inner wall; outer-closer to outer wall
+    start_pos = 'inner'     # inner-closer to inner wall; outer-closer to outer wall
 
     # These are currently seen obstacles
     red_obs = []
