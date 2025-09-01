@@ -157,6 +157,8 @@ void setup(){
   rgbLED.setStaticColor(rgbLED.GREEN);
 
   targetControl.init(&motor, &steering, &debugLogger);
+  motor.driveMotor(0, 0);
+  steering.steer(0);
 
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
@@ -185,13 +187,7 @@ void loop(){
   // Update state machine
   coreRunStateMachine();
 
-  // Command motors and steering 
-  if(coreVehicleCommandDirect){
-    targetControl.directControl(coreVehicleCommand, coreVehicleData);
-  }
-  else{
-    targetControl.targetControl(coreVehicleCommand, coreVehicleData);
-  }
+  targetControl.directControl(coreVehicleCommand, coreVehicleData);
 
   // Log latest data and drive commands over debug serial port
   debugLogDataCommand(coreVehicleData, coreVehicleCommand);

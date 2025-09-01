@@ -15,7 +15,13 @@ public:
 
     GET_START_DIST,
     INITIAL_STRAIGHT,
-    GET_ROUND_DIR
+    GET_ROUND_DIR,
+    INITIAL_MOVE_BACKWARD,
+    STRAIGHT_0,
+    STRAIGHT_90,
+    STRAIGHT_180,
+    STRAIGHT_270
+
 
   };
 
@@ -35,16 +41,27 @@ private:
 
   // Variables determined while driving
   int16_t _frontStartDist;                  // Distance from front LiDAR when algorithm is started. Used to stop the vehicle in the same section it started in
-  bool roundDirCW;                          // True if round direction is clockwise, false if counterclockwise.
+  bool _roundDirCW;                         // True if round direction is clockwise, false if counterclockwise.
+  uint8_t _numTurns;                        // How many turns the vehicle has performed. Used to count rounds;
   
   // Driving constants
-  const int16_t _frontTurnThreshold = 50;   // When the front LiDAR distance is <= this value, the vehicle starts turning
-  const int16_t _frontProbeThreshold = 30;  // For the first straight section, the vehicle mvoes forward until the front LiDAR distance is <= this value, then gets round direction.
-  const int16_t _absBaseSpeed = 300;        // General driving speed
-  const int16_t _absTurnSpeed = 400;        // General turning speed;
-  const int16_t _absSlowSpeed = 200;        // Driving speed for the final straight section
+  const int16_t _frontTurnThreshold = 90;   // When the front LiDAR distance is <= this value, the vehicle starts turning
+  const int16_t _frontProbeThreshold = 40;  // For the first straight section, the vehicle mvoes forward until the front LiDAR distance is <= this value, then gets round direction.
+  const int16_t _absBaseSpeed = 225;        // General driving speed
+  const int16_t _absSlowSpeed = 150;        // Slower general driving speed.
+  const double _kP = 2;                     // Proportional constant for steering controller
+  const double _kI = 0.01;                  // Integral constant for steering controller
+  const int turnMargin = 5;                 // The vehicle orientation must be within +- turnMargin of the target yaw before the vehicle considers turning
 
   void _getStartDist();
   void _initialStraight();
+  void _getRoundDir();
+  void _initialMoveBackward();
+  int16_t _steeringController(double current, double target);
+  void _straight0();
+  void _straight90();
+  void _straight180();
+  void _straight270();
+  bool _inDegreeRange(double degree, double target, double range);
 
 };
