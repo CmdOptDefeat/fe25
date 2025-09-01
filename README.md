@@ -39,12 +39,12 @@ See [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#perip
 - [sw](https://github.com/CmdOptDefeat/fe25/tree/main/sw) : Contains PlatformIO project for the peripherals interface board.
 - [open-round](https://github.com/CmdOptDefeat/fe25/tree/main/open-round) : It contains the program files for the open round over various iterations and hardware setups. The final open round program is found in `sw/peripherals-board/src/divers`
 - [repo-assets](https://github.com/CmdOptDefeat/fe25/tree/main/repo-assets) : It contains pictures and description of the robot and its components. All other photos in the repo are also found here.
-- [obstacle-round](https://github.com/CmdOptDefeat/fe25/tree/main/obstacle-round) : Programs for the obstacle round. These are categorised in order of working alphabetically. There may be related videos too.
+- [obstacle-round](https://github.com/CmdOptDefeat/fe25/tree/main/obstacle-round) : Programs for the obstacle round. These are categorised in order of working alphabetically. The related videos and log files are also present in these folders.
 - [test-data-recordings/open-round](https://github.com/CmdOptDefeat/fe25/tree/main/test-data-recordings) : It contains data logs from various open round tests
 
 > [!NOTE]
 > Random files called `.lgd-nfy0` may be seen sometimes in varioues places. These were probably created by a typo a long time ago, and despite repeated deletion, they keep spawning everywhere in the Pi's cone of the repo! Just ignore them, if they occur. 
-> `.DS_Store` are some system files used on MacOS. These too may be ignored.
+> `.DS_Store` are some system files used on MacOS. These too may appear throughout the repo, and may be ignored.
 
 
 # System Architecture 
@@ -228,7 +228,7 @@ TODO: it doesn't handle unparking, update this section
 
 We are using Raspbian Bookworm on the Raspberry Pi (latest at the time of this project)
 Run the following commands in the terminal
-- $`sudo chmod 0770 /run/user/1000`
+- $`sudo chmod 0700 /run/user/1000`
 - $`sudo apt install software-properties-common`
 - $`sudo apt install python3-launchpadlib`
 - $`sudo apt install code`

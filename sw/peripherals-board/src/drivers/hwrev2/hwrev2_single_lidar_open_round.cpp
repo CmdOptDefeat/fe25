@@ -75,7 +75,8 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
       speed = 200;
       if (front_lidarDist < 75){
         // Go back for first turn in case of extended wall
-        speed = 200;
+        backward = 100 - front_lidarDist;
+        back_start = distance;
       }
     }
     else if (turns == 11) speed = 210;
@@ -116,12 +117,17 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     if (turning) speed = 200;
     else speed = 180; 
   }
-
+  if (backward!=0 && ((back_start - distance) < (backward - 5))){
+    speed = -190;
+  }
+  else if ((backward!=0) && ((back_start - distance) > (backward - 5))){
+    backward = 0;
+    back_start = 0;
+  }
   command.targetSpeed = speed;
   // This sets servo position not yaw since this system is currently on direct control
   // Ref .hpp file with line 19 - `bool isDirectControl() override { return true; }`
   command.targetYaw = int(pos);
 
   return command;
-
 }

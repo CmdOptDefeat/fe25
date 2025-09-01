@@ -35,7 +35,8 @@ private:
     int turns = 0;
     bool turning = false;
     int turnDir = 0;           // 1 for clockwise, -1 for counterclockwise. Not known at start
-    
+    int backward = 0;          // How much to go back by in case
+    float back_start = 0;
     uint8_t pos = 90;          // variable to store the servo position  
 
     // About IMU
