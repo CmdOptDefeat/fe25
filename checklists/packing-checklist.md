@@ -23,3 +23,8 @@
 - Jumper wires
 
 ## Adbhut
+- USB-A to USB-C cable
+- USB-A to USB-Mini cable
+- USB-C to USB-C cable
+- Peripherals Interface Spare Parts
+- Peripherals Interface development hardware

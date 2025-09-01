@@ -18,7 +18,7 @@
 | Item | Part No. | Quantity | Notes/Description | Link | 
 |:-----------:|:------------:|:------------:| :------------:| :------------:|
 | RP2040 | Waveshare RP2040-Zero | 1 | Real time control of motors, sensors | [Product Link](https://robu.in/product/waveshare-rp2040-zero-without-header/) |
-| Peripherals Board | Custom design | 1 | Various compnents may be easily connected to RP2040 | [Link to Design](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/hw/peripherals-board-v2) |
+| Peripherals Board PCB | Custom design | 1 | Reliable connections between peripherals and peripherals interface board | [Link to Design](https://github.com/pkr2308/Ctrl-Alt-Defeat-WRO-Future-Engineers-2025/tree/main/hw/peripherals-board-v2) |
 | 1D LiDAR | Benewake TF-LUNA Micro | 4 | Finding distances to front, sides and back of robot | [Product Link](https://robu.in/product/benewake-tf-luna-lidar-distance-sensor/) |
 | 1D LiDAR Connectors | 28AWG 1.25mm 6 Pin Female Connector | 4 | Connect LiDAR to peripherals board | [Product Link](https://robu.in/product/a1251-06y-1-25mm-6-pin-female-housing-connector-with-300mm-wire30-awg/?gad_source=1&gad_campaignid=17427802703&gbraid=0AAAAADvLFWcLc1GCq-hK5RDM6ID4Mj9-K) |
 | IMU | BNO055 | 1 | Obtaining yaw readings | [Product Link](https://thinkrobotics.com/products/9-dof-absolute-orientation-bno055-sensor) |
