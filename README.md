@@ -66,8 +66,10 @@ All photos may be found [here](https://github.com/CmdOptDefeat/fe25/tree/main/re
 
 - A commercially available metal [chassis base](https://www.elecrow.com/4wd-smart-car-robot-chassis-for-arduino-servo-steering.html) has been used with custom designed and printed parts. This chassis was selected mainly for its good steering system, mobility and customisabilty (there are lots of through holes through the base-frame). While the steering was retained, the remaining parts were custom designed.
 - A link based steering system is used in the robot with a link-rod between the front wheel joints and another between a wheel joint and the servo. This steering system has been taken from the chassis without much modification due to its precision. A MG996R 180° servo has been used for the steering due to its high torque and accuracy, which improve mobility. The turn radius is around 32-33cm.
+- ![Steering System](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0020.HEIC)
 - A single axle rear drive train is used for driving is used. A 200RPM N20 motor is used due to its speed and decent torque. A 1:1 gear ratio is used with a pair of brass gears. Bearings are used on the rear axle for smooth movement. A custom [rear drive holder](https://github.com/CmdOptDefeat/fe25/blob/main/design-files/N20%20Motor%20Holder.stl) is used to house all these parts.
 - Both the servo and N20 motors are connected to the peripherals board. The servo is controlled using the standard library, while PWM is used for speed control of the motor.
+- ![Rear Drive](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0023.HEIC)
 - This robot offers realistic car-like dynamics, ideal for FE challenge simulation.
 [Design files](https://github.com/CmdOptDefeat/fe25/tree/main/design-files) contains all the other custom 3D-Design files (created on [TinkerCAD](https://www.tinkercad.com)) for mounting various compnents and systems onto the base chassis and one another.
 [Robot assembly](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#robot-assembly) instructions are below.
@@ -157,6 +159,8 @@ It will be helpful to refer to the [pictures of the construction](https://github
 ![Peripherals Interface Board - Top](https://github.com/CmdOptDefeat/fe25/blob/main/repo-assets/edited-photos/periph-board-pcb-top.jpg)
 
 The peripherals interface board goes between the Raspberry Pi and vehicle hardware. The board talks to three 1d TFLuna LiDARs, a 9-axis BNO055 IMU, the motor encoder, the drive motor, and the steering servo. It talks to the Pi over USB.
+
+![Peripherals Board on the Robot](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0016.HEIC)
 
 ## Hardware
 The board is a two-layer, 1.6 mm thick PCB designed in [KiCad](https://kicad.org) and manufactured by [Robu](https://robu.in).
