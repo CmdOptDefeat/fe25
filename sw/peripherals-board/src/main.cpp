@@ -39,6 +39,7 @@ SensorManager sensorManager(VEHICLE_GET_CONFIG);
 
 enum CoreControlState{
 
+  WAIT_FOR_BUTTON,
   OPEN_ROUND,
   GET_ORIENTATION,
   UNPARK,
@@ -57,6 +58,7 @@ CoreControlState coreControlState;
 bool coreRoundDirCW;
 
 
+void coreWaitForButton();
 void coreGetOrientation();
 void coreUnpark();
 void coreDriveFromPi();
@@ -82,6 +84,11 @@ void debugBootselCallback();
  */
 void setup(){
 
+  // Check if multiple vehicle configurations are defined when compiling
+  #if (defined(VEHICLE_CONFIGURATION_OPEN_ROUND) + defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING) + defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)) > 1
+    #error "Multiple vehicle configuration defines are set! Only one of VEHICLE_CONFIGURATION_OPEN_ROUND, VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING, or VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING should be defined."
+  #endif
+
   debugLogger.init();  
   debugLogger.addKillHandler(debugKillCallback);
   debugLogger.addBootselHandler(debugBootselCallback);
@@ -104,6 +111,8 @@ void setup(){
   Wire.setSCL(VEHICLE_GET_CONFIG.pinConfig.i2c0SCL);
   Wire.setSDA(VEHICLE_GET_CONFIG.pinConfig.i2c0SDA);
   Wire.begin();
+
+  pinMode(VEHICLE_GET_CONFIG.pinConfig.lidarMotorPWM, INPUT_PULLUP);
 
   debugLogger.sendMessage("setup()", debugLogger.INFO, "Finished setting communication pins for SPI1, UART1, I2C0");
 
@@ -151,7 +160,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = OPEN_ROUND;
+  coreControlState = WAIT_FOR_BUTTON;
 
 }
 
@@ -403,6 +412,32 @@ void debugBootselCallback(){
 
 }
 
+void coreWaitForButton(){
+
+  #if defined(VEHICLE_CONFIGURATION_ENABLE_BUTTON_CHECK)
+
+    if(digitalRead(VEHICLE_GET_CONFIG.pinConfig.lidarMotorPWM)){
+      return;
+    }
+
+  #endif
+
+
+  #if defined(VEHICLE_CONFIGURATION_OPEN_ROUND)
+    debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OPEN_ROUND defined.");
+    coreControlState = OPEN_ROUND;
+  #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING)
+    debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING defined.");
+    coreControlState = GET_ORIENTATION;
+  #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)
+    debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING defined.");
+    coreControlState = GET_ORIENTATION;
+  #else
+    #error "VEHICLE_CONFIGURATION_OPEN_ROUND, VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING, or VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING must be defined!"
+  #endif
+
+}
+
 void coreGetOrientation(){
 
   uint16_t leftDist = coreVehicleData.lidar[270];
@@ -410,9 +445,15 @@ void coreGetOrientation(){
 
   coreRoundDirCW = rightDist > leftDist;
 
-  coreControlState = UNPARK;  // Move on to unparking after figuring out direction
+  #if defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING)
+    debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING defined, setting coreControlState to DRIVE_FROM_PI");
+    coreControlState = DRIVE_FROM_PI;
+  #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)
+    debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING defined, setting coreControlState to UNPARK");
+    coreControlState = UNPARK;
+  #endif
 
-  debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "Set coreRoundDirCW to " + String(coreRoundDirCW ? "true" : "false"));  // not sure why +ing a set string and a ternary returns only the ternary eval, wrapping ternary in String() fixes it
+  debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "Set coreRoundDirCW to " + String(coreRoundDirCW ? "true" : "false")); 
 
 }
 
@@ -486,6 +527,10 @@ void coreRunStateMachine(){
 
   switch(coreControlState){
 
+    case WAIT_FOR_BUTTON:
+      coreWaitForButton();
+      break;
+
     case OPEN_ROUND:
       coreOpenRound();
       break;
@@ -526,8 +571,12 @@ void coreSetLEDColor(CoreControlState state){
 
   switch(state){
 
+    case WAIT_FOR_BUTTON:
+      rgbLED.setStaticColor(rgbLED.WHITE);
+      break;
+
     case GET_ORIENTATION:
-      rgbLED.setStaticColor(rgbLED.CYAN);
+      rgbLED.setStaticColor(rgbLED.RED);
       break;
 
     case DRIVE_FROM_PI:
@@ -535,7 +584,7 @@ void coreSetLEDColor(CoreControlState state){
       break;
 
     case OPEN_ROUND:
-      rgbLED.setStaticColor(rgbLED.CYAN);
+      rgbLED.setStaticColor(rgbLED.AMBER);
       break;
 
     case PARK:
@@ -547,7 +596,7 @@ void coreSetLEDColor(CoreControlState state){
       break;
 
     case SAFE:
-      rgbLED.setStaticColor(rgbLED.AMBER);
+      rgbLED.setStaticColor(rgbLED.PURPLE);
       break;
 
   }

@@ -23,6 +23,8 @@ public:
   static const RGBColor AMBER;
   static const RGBColor CYAN;
   static const RGBColor BLACK;
+  static const RGBColor WHITE;
+  static const RGBColor PURPLE;
 
 private:
   VehicleConfig _config;

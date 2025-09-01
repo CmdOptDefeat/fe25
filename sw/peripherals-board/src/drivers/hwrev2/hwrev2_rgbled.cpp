@@ -5,7 +5,13 @@ const RGBColor hwrev2_RGBLED::GREEN    = {0, 255, 0};
 const RGBColor hwrev2_RGBLED::BLUE     = {0, 0, 255};
 const RGBColor hwrev2_RGBLED::AMBER    = {255, 255, 0};
 const RGBColor hwrev2_RGBLED::CYAN     = {0, 255, 255};
+const RGBColor hwrev2_RGBLED::PURPLE   = {255, 0, 255};
 const RGBColor hwrev2_RGBLED::BLACK    = {0, 0, 0};
+const RGBColor hwrev2_RGBLED::WHITE    = {255, 255, 255};
+
+// red-green
+// red-blue
+// green-blue
 
 hwrev2_RGBLED::hwrev2_RGBLED(VehicleConfig cfg){
 
