@@ -27,9 +27,10 @@ See [this section](https://github.com/CmdOptDefeat/fe25?tab=readme-ov-file#perip
 
 Some photos of the robot - 
 <br><br>
-
+![Top view](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0007.HEIC)
+![Side view](https://raw.githubusercontent.com/CmdOptDefeat/fe25/refs/heads/main/repo-assets/raw-photos/robot/IMG_0005.HEIC)
 <br><br>
-All photos may be found [here]()
+All photos may be found [here](https://github.com/CmdOptDefeat/fe25/tree/main/repo-assets/raw-photos/robot)
 
 # Hardware Components
 - __Compute:__ Raspberry Pi 5 (main computer), Raspberry Pi 2040 (Waveshare RP2040-Zero, real-time control)
