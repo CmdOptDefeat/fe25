@@ -20,7 +20,8 @@ public:
     STRAIGHT_0,
     STRAIGHT_90,
     STRAIGHT_180,
-    STRAIGHT_270
+    STRAIGHT_270,
+    COMPLETED
 
 
   };
@@ -29,7 +30,7 @@ public:
   void init(ILogger *logger) override;
   VehicleCommand drive(VehicleData vehicleData) override;
   bool isDirectControl() override {return true;}
-  bool isFinished() override {return false;}  
+  bool isFinished() override {return _state == COMPLETED;}  
 
 private:
 
@@ -45,9 +46,9 @@ private:
   uint8_t _numTurns;                        // How many turns the vehicle has performed. Used to count rounds;
   
   // Driving constants
-  const int16_t _frontTurnThreshold = 90;   // When the front LiDAR distance is <= this value, the vehicle starts turning
+  const int16_t _frontTurnThreshold = 100;   // When the front LiDAR distance is <= this value, the vehicle starts turning
   const int16_t _frontProbeThreshold = 40;  // For the first straight section, the vehicle mvoes forward until the front LiDAR distance is <= this value, then gets round direction.
-  const int16_t _absBaseSpeed = 225;        // General driving speed
+  const int16_t _absBaseSpeed = 1024;        // General driving speed
   const int16_t _absSlowSpeed = 150;        // Slower general driving speed.
   const double _kP = 2;                     // Proportional constant for steering controller
   const double _kI = 0.01;                  // Integral constant for steering controller
@@ -63,5 +64,7 @@ private:
   void _straight180();
   void _straight270();
   bool _inDegreeRange(double degree, double target, double range);
+  void _stopCheck();
+  void _speedCheck();
 
 };
