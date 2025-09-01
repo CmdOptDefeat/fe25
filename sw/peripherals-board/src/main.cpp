@@ -50,6 +50,7 @@ enum CoreControlState{
 };
 
 VehicleCommand coreVehicleCommand;
+bool coreVehicleCommandDirect;
 VehicleCommand coreSerialCommand;
 VehicleData coreVehicleData;
 VehicleInstruction coreVehicleInstructionToPi;
@@ -184,8 +185,13 @@ void loop(){
   // Update state machine
   coreRunStateMachine();
 
-  // Command motors and steering (fixed to directControl regardless of drive command's isDirectControl return; hack since all algorithms written assume direct output)
-  targetControl.directControl(coreVehicleCommand, coreVehicleData);
+  // Command motors and steering 
+  if(coreVehicleCommandDirect){
+    targetControl.directControl(coreVehicleCommand, coreVehicleData);
+  }
+  else{
+    targetControl.targetControl(coreVehicleCommand, coreVehicleData);
+  }
 
   // Log latest data and drive commands over debug serial port
   debugLogDataCommand(coreVehicleData, coreVehicleCommand);
@@ -467,6 +473,7 @@ void coreUnpark(){
   }
 
   coreVehicleCommand = unparkAlgorithm.drive(coreVehicleData);
+  coreVehicleCommandDirect = unparkAlgorithm.isDirectControl();
   coreVehicleInstructionToPi = NO_INSTRUCTION;
 
 }
@@ -484,6 +491,8 @@ void coreDriveFromPi(){
   coreVehicleInstructionToPi = RP2040_RPI_START_OBSTACLE_NAVIGATION;
   coreVehicleCommand.targetSpeed = coreSerialCommand.targetSpeed;
   coreVehicleCommand.targetYaw = coreSerialCommand.targetYaw;
+  coreVehicleCommandDirect = true;
+
 
 }
 
@@ -497,6 +506,7 @@ void corePark(){
   }
 
   coreVehicleCommand = parkAlgorithm.drive(coreVehicleData);
+  coreVehicleCommandDirect = parkAlgorithm.isDirectControl();
 
 }
 
@@ -520,6 +530,7 @@ void coreOpenRound(){
   }
 
   coreVehicleCommand = openRoundAlgorithm.drive(coreVehicleData);
+  coreVehicleCommandDirect = openRoundAlgorithm.isDirectControl();
 
 }
 

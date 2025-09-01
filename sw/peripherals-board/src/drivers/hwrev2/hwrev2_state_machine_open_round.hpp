@@ -32,22 +32,19 @@ private:
   VehicleCommand _cmd;
   VehicleData _data;
   DriveState _state;
-  PID *_turnPID;
 
-  double _pidTargetYaw;
-  double _pidYawError;
-  double _pidAdjustedTargetYaw;
-  double _pidVehicleYaw;
-  double _pidOutput;
+  // Variables determined while driving
+  int16_t _frontStartDist;                  // Distance from front LiDAR when algorithm is started. Used to stop the vehicle in the same section it started in
+  bool roundDirCW;                          // True if round direction is clockwise, false if counterclockwise.
+  
+  // Driving constants
+  const int16_t _frontTurnThreshold = 50;   // When the front LiDAR distance is <= this value, the vehicle starts turning
+  const int16_t _frontProbeThreshold = 30;  // For the first straight section, the vehicle mvoes forward until the front LiDAR distance is <= this value, then gets round direction.
+  const int16_t _absBaseSpeed = 300;        // General driving speed
+  const int16_t _absTurnSpeed = 400;        // General turning speed;
+  const int16_t _absSlowSpeed = 200;        // Driving speed for the final straight section
 
-  int16_t _frontStartDist;
-
-  const int16_t _frontTurnThreshold = 50;
-  const int16_t _absBaseSpeed = 200;
-
-  void _drivePID(double targetAngle);
   void _getStartDist();
   void _initialStraight();
-  double getShortestAngleError(double target, double current);
 
 };
