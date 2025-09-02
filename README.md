@@ -280,6 +280,8 @@ The Pi communicates with the RP2040 over the serial. When the Pi sends a command
 Refer to [`sw/peripherals-board/src/drivers/hwrev2/hwrev2_single_lidar_open_round.cpp and .hpp`](https://github.com/CmdOptDefeat/fe25/blob/main/sw/peripherals-board/src/drivers/hwrev2/hwrev2_single_lidar_open_round.cpp) files for program.
 The idea to stick to the outer wall, so even with randomisation, the extended inner wall is not hit.
 
+Videos of the open round may be found [here](https://github.com/CmdOptDefeat/fe25/tree/main/repo-assets/open-round-videos)
+
 - Uses front LiDAR to detect when to start a turn (if obstacle is close).
 - Decides turn direction (left/right) based on side LiDARs (First turn only)
 - Turns are started considering factors of distance available, yaw, current section and distance travelled. 
