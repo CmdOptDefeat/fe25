@@ -33,7 +33,7 @@
 #define VEHICLE_DRIVER_RGB_LED hwrev2_RGBLED
 #define VEHICLE_GET_CONFIG hwrev2_getConfig()
 
-#define VEHICLE_DRIVER_OPEN_ROUND_ALGORITHM hw_rev_2_SingleLidarOpenRound
+#define VEHICLE_DRIVER_OPEN_ROUND_ALGORITHM hw_rev_2_WallFollowingOpenRound
 #define VEHICLE_DRIVER_UNPARK_ALGORITHM hw_rev_2_UnparkAlgorithm
 #define VEHICLE_DRIVER_PARK_ALGORITHM hw_rev_2_ParkAlgorithm
 
