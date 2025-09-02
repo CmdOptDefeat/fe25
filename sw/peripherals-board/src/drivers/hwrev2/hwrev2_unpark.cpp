@@ -47,6 +47,7 @@ VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data){
 
 }
 
+/*
 void hw_rev_2_UnparkAlgorithm::_turn0(){
 
   if(_data.lidar[180] <= 2){
@@ -121,11 +122,67 @@ void hw_rev_2_UnparkAlgorithm::_turn4(){
   _cmd.targetYaw = _data.roundDirectionCW ? MAX_LEFT_TURN : MAX_RIGHT_TURN;
   _cmd.targetSpeed = -_absTurnSpeed;
 
+}*/
+
+void hw_rev_2_UnparkAlgorithm::_turn0(){
+  _cmd.targetSpeed = -120;
+  if (_data.lidar[90] > 20){ 
+    _cmd.targetYaw = 10;
+    turn_dir = 1;
+  }
+  else if (_data.lidar[270] > 20) {
+    _cmd.targetYaw = 165;
+    turn_dir = -1;
+  }
+  _state = TURN1;
+  return;
+  _cmd.targetYaw = 90;
+  _cmd.targetSpeed = -_absTurnSpeed;
 }
 
+void hw_rev_2_UnparkAlgorithm::_turn1(){
+  if (_data.lidar[180] <= 5){
+    if (turn_dir == 1) _cmd.targetYaw = 167;
+    else if (turn_dir == -1) _cmd.targetYaw = 5;
+    _cmd.targetSpeed = 120;
+    _state = TURN2;
+    return;
+  }
+  _cmd.targetYaw = _data.roundDirectionCW ? MAX_RIGHT_TURN : MAX_LEFT_TURN;
+  _cmd.targetSpeed = _absTurnSpeed;
+}
 
-bool hw_rev_2_UnparkAlgorithm::isFinished(){
+void hw_rev_2_UnparkAlgorithm::_turn2(){
+  float yaw = _data.orientation.x;
+  if (turn_dir == -1 && yaw<=350 && yaw > 300){
+    _cmd.targetSpeed = -120;
+    _cmd.targetYaw = 160;
+    _state = TURN3;
+    return;
+  }
+  else if (turn_dir == 1 && yaw > 40 && yaw < 90){
+    _cmd.targetSpeed = -120;
+    _cmd.targetYaw = 10;
+    _state = TURN3;
+    return;
+  }
+  _cmd.targetYaw = _data.roundDirectionCW ? MAX_LEFT_TURN : MAX_RIGHT_TURN;
+  _cmd.targetSpeed = -_absTurnSpeed;
+}
 
+void hw_rev_2_UnparkAlgorithm::_turn3(){
+  if (_data.lidar[180] <= 4){
+    _cmd.targetSpeed = 0;
+    _cmd.targetYaw = 90;
+    return;
+  }
+  _cmd.targetYaw = _data.roundDirectionCW ? MAX_RIGHT_TURN : MAX_LEFT_TURN;
+  _cmd.targetSpeed = -120;
+}
+
+void hw_rev_2_UnparkAlgorithm::_turn4(){}
+
+bool hw_rev_2_UnparkAlgorithm::isFinished()
+{
   return false;
-
 }

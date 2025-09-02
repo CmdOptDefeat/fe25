@@ -35,7 +35,7 @@ private:
   const int16_t _absTurnSpeed = 250;
   const int16_t MAX_LEFT_TURN = 10;
   const int16_t MAX_RIGHT_TURN = 170;
-
+  int turn_dir = 0;
   void _turn0();
   void _turn1();
   void _turn2();
