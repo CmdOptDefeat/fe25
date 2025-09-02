@@ -122,6 +122,8 @@ void setup(){
   unparkAlgorithm.init(&debugLogger);
   parkAlgorithm.init(&debugLogger);
   openRoundAlgorithm.init(&debugLogger);
+  
+  delay(2000); // Wait for some time after the bot is turned on before starting
 
   if(!sensorManager.addSensor(&bno)){
 
@@ -164,7 +166,6 @@ void setup(){
   serialCommunication.init(&debugLogger);
 
   coreControlState = WAIT_FOR_BUTTON;
-  delay(2000); // Wait for some time after the bot is turned on before starting
 }
 
 /**
@@ -395,6 +396,9 @@ void debugBootselCallback(){
 }
 
 void coreWaitForButton(){
+  coreVehicleCommand.targetYaw = 90;
+  coreVehicleCommand.targetSpeed = 0;
+  coreVehicleCommandDirect = true;
 
   #if defined(VEHICLE_CONFIGURATION_ENABLE_BUTTON_CHECK)
 

@@ -12,11 +12,11 @@ hw_rev_2_SingleLidarOpenRound::hw_rev_2_SingleLidarOpenRound(VehicleConfig cfg){
 
 void hw_rev_2_SingleLidarOpenRound::init(ILogger* logger) {
 
+  delay(1500);
   _debugLogger = logger;
   _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::init()", _debugLogger->INFO, "Initialising drive algorithm");
-  speed = 175;                      // Initial speed
-  
-  VehicleCommand{.targetSpeed = speed, .targetYaw = 90}; // Set initial speed, steering  
+  VehicleCommand{.targetSpeed = 0, .targetYaw = 90}; // Set initial speed, steering  
+  delay(1000);
 
 }
 
@@ -40,7 +40,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     }
     else if (left_lidarDist - right_lidarDist < -100){ 
       turnDir = 1; // Turning to right
-      threshold = 79; 
+      threshold = 75; 
     }  
   }
 

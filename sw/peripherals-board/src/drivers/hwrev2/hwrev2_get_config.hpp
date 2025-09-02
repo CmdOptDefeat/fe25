@@ -39,7 +39,7 @@ VehicleConfig hwrev2_getConfig(){
   cfg.pinConfig.uart0RX                     = 1;
   cfg.pinConfig.uart0TX                     = 0;
 
-  cfg.pinConfig.lidarMotorPWM               = 29;
+  cfg.pinConfig.lidarMotorPWM               = 29; // Actually the start button now
 
   cfg.pinConfig.rgbLed                      = 16;
 
