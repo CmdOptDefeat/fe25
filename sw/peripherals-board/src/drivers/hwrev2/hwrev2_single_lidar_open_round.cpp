@@ -40,7 +40,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     }
     else if (left_lidarDist - right_lidarDist < -100){ 
       turnDir = 1; // Turning to right
-      threshold = 75; 
+      threshold = 73; 
     }  
   }
 
@@ -82,7 +82,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns != 0 && distance > 100))){
     turning = true;
     targetYaw = ((turnDir * (turns + 1) * 90) + 360) % 360;
-    if (turnDir == -1) targetYaw += turns * 0.9f;
+    if (turnDir == -1) targetYaw += turns * 0.95f;
     else if (turnDir == 1) targetYaw -= turns * 1.05f;
     if (turnDir == 1) pos = 90 + 80; // Set servo position for turning
     else if (turnDir == -1) pos = 90 - 84;
@@ -98,7 +98,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
           //pos = 0;
           backward = 8;
         }
-        else backward = 15;
+        else backward = 14;
       }
       back_start = distance;
       //turning = false;
@@ -132,7 +132,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   } 
 
   // Check is 3 rounds are completed
-  if (turns == 12 && front_lidarDist > 120 && front_lidarDist < 175 && distance > 5){
+  if (turns == 12 && front_lidarDist > 120 && front_lidarDist < 175 && distance > 25){
     completed = true;
     speed = 0; // Stop the vehicle
     pos = 90; // Reset servo position
