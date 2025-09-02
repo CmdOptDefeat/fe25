@@ -163,8 +163,8 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = OPEN_ROUND;
-
+  coreControlState = WAIT_FOR_BUTTON;
+  delay(2000); // Wait for some time after the bot is turned on before starting
 }
 
 /**

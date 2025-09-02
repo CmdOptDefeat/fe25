@@ -26,7 +26,7 @@ private:
 
     // About driving
     int dir = 1;
-    int16_t speed = 200;  // Motor speed in PWM
+    int16_t speed = 175;  // Motor speed in PWM
     int lastEncoded = 0; 
     long encoderValue = 0;
     float distance = 0.0;
@@ -62,7 +62,7 @@ private:
 
     bool completed = false;          // Indicates if the 3 rounds are completed
 
-    const int PID_TURN_LIMIT_ABS = 85;
+    const int PID_TURN_LIMIT_ABS = 77;
     bool double_extended_wall = false;
     bool gone_back = false;
 };
