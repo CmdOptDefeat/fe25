@@ -11,7 +11,7 @@ We are a team of 2 aspiring engineers building an autonomous robotic car using R
 # About the Team
 Adbhut Patil: Adbhut is studying in 10th grade, under NIOS. He is interested in robotics, programming, and aviation.
 
-Pranav Kiran Rajarathna: Pranav is currently sudying in the 11th grade(PCMC combination) and has been interested in Robotics for several years . He has participated in WRO in other categories in the past years. He was also part of Coding club in his school and built a few robotics projects for school events. His other interests include maths, physics, numismatics and history.
+Pranav Kiran Rajarathna: Pranav is currently studying in the 11th grade(PCMC combination) and has been interested in Robotics for several years . He has participated in WRO in other categories in the past years. He was also part of Coding club in his school and built a few robotics projects for school events. His other interests include maths, physics, numismatics and history.
 
 | __Team Photo__ |
 |:-----------:|
