@@ -13,8 +13,8 @@
 //#define COMPETITION_OPEN_ROUND
 #define COMPETITION_OBSTACLE_ROUND
 #define VEHICLE_DRIVERSET_HWREV2                        // HWREV2 **NOTE** HWREV1 DRIVERS ARE INCOMPLETE, BUGGY, OR MISSING!!
-#define VEHICLE_SW_STATUS "Competiton Test Compile"     // String containing status of software. Printed over debug port
-#define VEHICLE_SW_NAME "Open Round Test Compile"      // String containing name of software. Printed over debug port
+#define VEHICLE_SW_STATUS "Competition Compile"         // String containing status of software. Printed over debug port
+#define VEHICLE_SW_NAME "Open Round Compile"            // String containing name of software. Printed over debug port
 
 #include <driverconfig.hpp>                             // **NOTE** All config #defines must be before this include
 #include <SensorManager.hpp>
@@ -168,7 +168,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = SAFE;
+  coreControlState = WAIT_FOR_BUTTON;
 
 }
 
