@@ -117,13 +117,10 @@ void setup(){
 
   debugLogger.sendMessage("setup()", debugLogger.INFO, "Finished setting communication pins for SPI1, UART1, I2C0");
 
-  sensorManager.init(&debugLogger);
-
   unparkAlgorithm.init(&debugLogger);
   parkAlgorithm.init(&debugLogger);
   openRoundAlgorithm.init(&debugLogger);
-  
-  delay(2000); // Wait for some time after the bot is turned on before starting
+  sensorManager.init(&debugLogger);
 
   if(!sensorManager.addSensor(&bno)){
 
@@ -155,6 +152,7 @@ void setup(){
 
   }
   
+  
   debugLogger.sendMessage("setup()", debugLogger.INFO, "Finished adding drivers to sensor manager");
   rgbLED.setStaticColor(rgbLED.GREEN);
 
@@ -165,7 +163,8 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = WAIT_FOR_BUTTON;
+  coreControlState = OPEN_ROUND;
+
 }
 
 /**
@@ -177,13 +176,14 @@ void loop(){
 
   // Create gap between loop prints
   debugLogger.sendString("\n\n\n");
+
   // Handle any serial input over debug port (disable for competition compile?)
-  debugLogger.handleInput();
+  //debugLogger.handleInput();
 
   // Get fresh data from sensors (manually set round direction bool based on what we've found out before)
   coreVehicleData = sensorManager.update();
   coreVehicleData.roundDirectionCW = coreRoundDirCW;
-  coreVehicleData.instruction = coreVehicleInstructionToPi;
+  coreVehicleData.instruction = coreVehicleInstructionToPi;  
 
   // Update state machine
   coreRunStateMachine();
@@ -194,11 +194,11 @@ void loop(){
   debugLogDataCommand(coreVehicleData, coreVehicleCommand);
 
   // Send latest data and drive commands over nRF24L01+ radio; not using any commands the telemetry adapter sends
-  remoteCommunication.update(coreVehicleData, coreVehicleCommand); 
+  //remoteCommunication.update(coreVehicleData, coreVehicleCommand); 
 
   // Update RPi on communication, set core instruction
-  coreSerialCommand = serialCommunication.update(coreVehicleData, coreVehicleCommand);
-  coreVehicleInstructionFromPi = coreSerialCommand.instruction;
+  //coreSerialCommand = serialCommunication.update(coreVehicleData, coreVehicleCommand);
+  //coreVehicleInstructionFromPi = coreSerialCommand.instruction;
 
 }
 
