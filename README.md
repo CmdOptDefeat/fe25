@@ -50,13 +50,13 @@ All photos may be found [here](https://github.com/CmdOptDefeat/fe25/tree/main/re
 - [test-data-recordings/open-round](https://github.com/CmdOptDefeat/fe25/tree/main/test-data-recordings) : It contains data logs from various open round tests
 
 > [!NOTE]
-> Random files called `.lgd-nfy0` may be seen sometimes in varioues places. These were probably created by a typo a long time ago, and despite repeated deletion, they keep spawning everywhere in the Pi's cone of the repo! Just ignore them, if they occur. 
+> Random files called `.lgd-nfy0` may be seen sometimes in varioues places. These were probably created by a typo a long time ago, and despite repeated deletion, they keep spawning everywhere in the Pi's clone of the repo! Just ignore them, if they occur. 
 > `.DS_Store` are some system files used on MacOS. These too may appear throughout the repo, and may be ignored.
 
 
 # System Architecture 
 
--	Raspberry Pi 5: It uses ROS2 and handles more complex tasks like object and colour detection, route planning, and the 2D LiDAR
+-	Raspberry Pi 5: It uses opencv and serial to handle the complex tasks of object detection and navigation.
 -	RP2040 (Pi Pico): Handles real-time tasks (motor PID, encoder feedback, servo control, IMU, 1D LiDAR)
 -	LiDARs: Used for detecting turn direction and executing turns and in parking
 -	IMU: Gives yaw (and other orientations) of the robot in [0,360) clockwise
@@ -191,7 +191,7 @@ To ensure easily testable, upgradeable, and clean code, the following standards 
 
 A list of implemented drivers:
 - `hwrev2_imu` : Implements `ISensor`. Driver for the BNO055. Gets orientation data processed by the BNO055's internal microcontroller.
-- `hwrev2_lidar` : Implements `ISensor`. Driver for the TFLuna LiDARs. Returns a [0, 259] of distance data. The three LiDARs are mapped to `0`, `90`, and `270`. (This is a remnant of the original plan of connecting the RPLidar to the peripherals board, instead of to the Pi.)
+- `hwrev2_lidar` : Implements `ISensor`. Driver for the TFLuna LiDARs. Returns a [0, 359] of distance data. The three LiDARs are mapped to `0`, `90`, and `270`. (This is a remnant of the original plan of connecting the RPLidar to the peripherals board, instead of to the Pi.)
 - `hwrev2_motor_driver` : Implements `IMotorDriver`. Driver for the TB6612FNG dual-channel H-bridge motor driver. The driver only supports driving a single channel on the T66612FNG.
 - `hwrev2_rf24_communication` :  Implements `ICommunication`. Driver for the nRF24L01+ radio used during development. Transmits vehicle data and gets commands from another nRF24L01+, connected to a computer.
 - `hwrev2_single_lidar_open_round` : Implements `IDriveAlgorithm`. A port of our open round test algorithm. The name is misleading, the algorithm uses all three TFLunas.
