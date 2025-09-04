@@ -13,8 +13,8 @@
 //#define COMPETITION_OPEN_ROUND
 #define COMPETITION_OBSTACLE_ROUND
 #define VEHICLE_DRIVERSET_HWREV2                        // HWREV2 **NOTE** HWREV1 DRIVERS ARE INCOMPLETE, BUGGY, OR MISSING!!
-#define VEHICLE_SW_STATUS "DEV"                         // String containing status of software. Printed over debug port
-#define VEHICLE_SW_NAME "Serial Integration Tests"      // String containing name of software. Printed over debug port
+#define VEHICLE_SW_STATUS "Competiton Test Compile"     // String containing status of software. Printed over debug port
+#define VEHICLE_SW_NAME "Open Round Test Compile"      // String containing name of software. Printed over debug port
 
 #include <driverconfig.hpp>                             // **NOTE** All config #defines must be before this include
 #include <SensorManager.hpp>
@@ -67,6 +67,7 @@ void corePark();
 void coreSafe();
 void coreOpenRound();
 void coreRunStateMachine();
+void coreCheckSafeButton();
 void coreSetLEDColor(CoreControlState state);
 
 
@@ -86,8 +87,12 @@ void debugBootselCallback();
 void setup(){
 
   // Check if multiple vehicle configurations are defined when compiling
-  #if (defined(VEHICLE_CONFIGURATION_OPEN_ROUND) + defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING) + defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)) > 1
-    #error "Multiple vehicle configuration defines are set! Only one of VEHICLE_CONFIGURATION_OPEN_ROUND, VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING, or VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING should be defined."
+  #if (defined(VEHICLE_CONFIGURATION_OPEN_ROUND) + defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)) > 1
+    #error "Multiple vehicle configuration defines are set! Only one of VEHICLE_CONFIGURATION_OPEN_ROUND or VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING should be defined."
+  #endif
+
+  #if defined(DVEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING)
+    #error "DVEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING is deprecated, use VEHICLE_CONFIGURATION_OPEN_ROUND or VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING "
   #endif
 
   debugLogger.init();  
@@ -163,7 +168,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = OPEN_ROUND;
+  coreControlState = SAFE;
 
 }
 
@@ -360,7 +365,6 @@ void debugFailureBlink(){
 
 }
 
-
 void debugKillBlink(){
 
   rgbLED.limitBrightness(50);
@@ -412,9 +416,6 @@ void coreWaitForButton(){
   #if defined(VEHICLE_CONFIGURATION_OPEN_ROUND)
     debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OPEN_ROUND defined.");
     coreControlState = OPEN_ROUND;
-  #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING)
-    debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING defined.");
-    coreControlState = GET_ORIENTATION;
   #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)
     debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING defined.");
     coreControlState = GET_ORIENTATION;
@@ -431,10 +432,7 @@ void coreGetOrientation(){
 
   coreRoundDirCW = rightDist > leftDist;
 
-  #if defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING)
-    debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING defined, setting coreControlState to DRIVE_FROM_PI");
-    coreControlState = DRIVE_FROM_PI;
-  #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)
+  #if defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)
     debugLogger.sendMessage("coreGetOrientation", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING defined, setting coreControlState to UNPARK");
     coreControlState = UNPARK;
   #endif
@@ -447,7 +445,7 @@ void coreUnpark(){
 
   if(unparkAlgorithm.isFinished()){
     
-    coreControlState = DRIVE_FROM_PI;
+    coreControlState = SAFE;
     return;
 
   }
@@ -496,7 +494,42 @@ void coreSafe(){
   motor.disarmMotor();
   steering.steer(0);
 
-  while(true);  // temp solution to fix servo jitter
+  while(true){
+
+    for(int i = 0; i < 255; i += 5){
+
+      RGBColor col;
+      col.red = i;
+      col.green = 0;
+      col.blue = 0;
+
+      rgbLED.setStaticColor(col);
+
+    }
+
+    for(int i = 0; i < 255; i += 5){
+
+      RGBColor col;
+      col.red = 0;
+      col.green = i;
+      col.blue = 0;
+
+      rgbLED.setStaticColor(col);
+
+    }
+
+    for(int i = 0; i < 255; i += 5){
+
+      RGBColor col;
+      col.red = 0;
+      col.green = 0;
+      col.blue = i;
+
+      rgbLED.setStaticColor(col);
+
+    }
+
+  }
 
 }
 
@@ -557,7 +590,7 @@ void coreRunStateMachine(){
 }
 
 void coreSetLEDColor(CoreControlState state){
-
+  
   rgbLED.limitBrightness(10);
 
   switch(state){
@@ -590,6 +623,14 @@ void coreSetLEDColor(CoreControlState state){
       rgbLED.setStaticColor(rgbLED.PURPLE);
       break;
 
+  }
+
+}
+
+void coreCheckSafeButton(){
+
+  if(!digitalRead(VEHICLE_GET_CONFIG.pinConfig.lidarMotorPWM)){
+    coreControlState = SAFE;
   }
 
 }

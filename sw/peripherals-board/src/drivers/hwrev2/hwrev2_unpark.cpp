@@ -191,8 +191,3 @@ void hw_rev_2_UnparkAlgorithm::_turn3()
 }
 
 void hw_rev_2_UnparkAlgorithm::_turn4() {}
-
-bool hw_rev_2_UnparkAlgorithm::isFinished()
-{
-  return false;
-}

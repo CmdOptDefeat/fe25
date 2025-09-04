@@ -11,8 +11,7 @@ enum hw_rev_2_unpark_state{
   TURN1,
   TURN2,
   TURN3,
-  TURN4
-
+  TURN4,
 
 };
 
@@ -23,7 +22,7 @@ public:
   void init(ILogger *logger) override;
   VehicleCommand drive(VehicleData data) override;
   bool isDirectControl() override {return true;}
-  bool isFinished() override;
+  bool isFinished() override {return _state == TURN3;};
 
 private:
   VehicleConfig _config;
