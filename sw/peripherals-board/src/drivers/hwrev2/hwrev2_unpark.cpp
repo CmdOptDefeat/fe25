@@ -1,51 +1,50 @@
 #include <hwrev2_unpark.hpp>
 
-hw_rev_2_UnparkAlgorithm::hw_rev_2_UnparkAlgorithm(VehicleConfig cfg){
- 
-  _config = cfg;
+hw_rev_2_UnparkAlgorithm::hw_rev_2_UnparkAlgorithm(VehicleConfig cfg)
+{
 
+  _config = cfg;
 }
 
-void hw_rev_2_UnparkAlgorithm::init(ILogger *logger){
+void hw_rev_2_UnparkAlgorithm::init(ILogger *logger)
+{
 
   _logger = logger;
-  
 }
 
-VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data){
+VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data)
+{
 
   _data = data;
 
-  switch(_state){
+  switch (_state)
+  {
 
-    case TURN0:
-      _turn0();
-      delay(1000);
-      break;
+  case TURN0:
+    _turn0();
+    break;
 
-    case TURN1:
-      _turn1();
-      break;
+  case TURN1:
+    _turn1();
+    break;
 
-    case TURN2:
-      _turn2();
-      break;
+  case TURN2:
+    _turn2();
+    break;
 
-    case TURN3:
-      _turn3();
-      break;
+  case TURN3:
+    _turn3();
+    break;
 
-    case TURN4:
-      _turn4();
-      break;
+  case TURN4:
+    _turn4();
+    break;
 
-    default:
-      break;
-
+  default:
+    break;
   }
 
   return _cmd;
-
 }
 
 /*
@@ -125,13 +124,16 @@ void hw_rev_2_UnparkAlgorithm::_turn4(){
 
 }*/
 
-void hw_rev_2_UnparkAlgorithm::_turn0(){
+void hw_rev_2_UnparkAlgorithm::_turn0()
+{
   _cmd.targetSpeed = -90;
-  if (_data.lidar[90] > 20){ 
+  if (_data.lidar[90] > 20)
+  {
     _cmd.targetYaw = 5;
     turn_dir = 1;
   }
-  else if (_data.lidar[270] > 20) {
+  else if (_data.lidar[270] > 20)
+  {
     _cmd.targetYaw = 168;
     turn_dir = -1;
   }
@@ -140,35 +142,47 @@ void hw_rev_2_UnparkAlgorithm::_turn0(){
   _cmd.targetSpeed = 0;
 }
 
-void hw_rev_2_UnparkAlgorithm::_turn1(){
-  if (_data.lidar[180] < 6){
-    if (turn_dir == 1) _cmd.targetYaw = 167;
-    else if (turn_dir == -1) _cmd.targetYaw = 5;
+void hw_rev_2_UnparkAlgorithm::_turn1()
+{
+  if (_data.lidar[180] < 6)
+  {
+    if (turn_dir == 1)
+      _cmd.targetYaw = 167;
+    else if (turn_dir == -1)
+      _cmd.targetYaw = 5;
     _cmd.targetSpeed = 100;
     _state = TURN2;
     return;
   }
+
+  _cmd.targetSpeed = -90;
+
 }
 
-void hw_rev_2_UnparkAlgorithm::_turn2(){
+void hw_rev_2_UnparkAlgorithm::_turn2()
+{
   float yaw = _data.orientation.x;
-  if (turn_dir == -1 && yaw<=310 && yaw > 270){
+  if (turn_dir == -1 && yaw <= 310 && yaw > 270)
+  {
     _cmd.targetSpeed = 0;
     _cmd.targetYaw = 168;
     _state = TURN3;
     return;
   }
-  else if (turn_dir == 1 && yaw > 50 && yaw < 90){
+  else if (turn_dir == 1 && yaw > 50 && yaw < 90)
+  {
     _cmd.targetSpeed = 0;
     _cmd.targetYaw = 5;
     _state = TURN3;
     return;
   }
-  _cmd.targetSpeed = 0;
+  _cmd.targetSpeed = 100;
 }
 
-void hw_rev_2_UnparkAlgorithm::_turn3(){
-  if (_data.lidar[180] <= 4){
+void hw_rev_2_UnparkAlgorithm::_turn3()
+{
+  if (_data.lidar[180] <= 4)
+  {
     _cmd.targetSpeed = 0;
     _cmd.targetYaw = 90;
     return;
@@ -176,7 +190,7 @@ void hw_rev_2_UnparkAlgorithm::_turn3(){
   _cmd.targetSpeed = 0;
 }
 
-void hw_rev_2_UnparkAlgorithm::_turn4(){}
+void hw_rev_2_UnparkAlgorithm::_turn4() {}
 
 bool hw_rev_2_UnparkAlgorithm::isFinished()
 {
