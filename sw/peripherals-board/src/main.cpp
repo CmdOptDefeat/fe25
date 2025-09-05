@@ -14,7 +14,7 @@
 #define COMPETITION_OBSTACLE_ROUND
 #define VEHICLE_DRIVERSET_HWREV2                        // HWREV2 **NOTE** HWREV1 DRIVERS ARE INCOMPLETE, BUGGY, OR MISSING!!
 #define VEHICLE_SW_STATUS "Competition Compile"         // String containing status of software. Printed over debug port
-#define VEHICLE_SW_NAME "Open Round Compile"            // String containing name of software. Printed over debug port
+#define VEHICLE_SW_NAME "Unparking Compile"            // String containing name of software. Printed over debug port
 
 #include <driverconfig.hpp>                             // **NOTE** All config #defines must be before this include
 #include <SensorManager.hpp>
