@@ -676,4 +676,6 @@ String coreGetStringFromState(CoreControlState state){
 
   }
 
+  return "Invalid State";
+
 }
