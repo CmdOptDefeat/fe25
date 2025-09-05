@@ -78,7 +78,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   }
 
   // Checking to turn, not turning anyways.
-  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns >= 2 && distance > 100)) || (turns == 1 && distance > 50)){
+  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns >= 2 && distance > 85)) || (turns == 1 && distance > 75)){
     turning = true;
     targetYaw = ((turnDir * (turns + 1) * 90) + 360) % 360;
     if (turnDir == -1) targetYaw += turns * 0.95f;
@@ -89,13 +89,13 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
     if (turns == 0 && front_lidarDist < 70 && (left_lidarDist + right_lidarDist) > 120 && backward == 0){
       // Go back for first turn in case of extended wall
       if (turnDir == -1){
-        if (left_start_dist < 10 && right_start_dist < 45) backward = 11;
-        else backward = 21;
+        if (left_start_dist < 10 && right_start_dist < 45) backward = 9;
+        else backward = 18;
       }
       else if (turnDir == 1){
         if (left_start_dist < 45 && right_start_dist < 10){ 
           //pos = 0;
-          backward = 8;
+          backward = 10;
         }
         else backward = 14;
       }
