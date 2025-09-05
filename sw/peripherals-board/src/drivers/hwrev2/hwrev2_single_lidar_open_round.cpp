@@ -163,7 +163,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   // Ref .hpp file with line 19 - `bool isDirectControl() override { return true; }`
   command.targetYaw = int(pos);
 
-  _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Speed " + String(speed) + "  ;Steering " + String(pos));
+  _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Speed " + String(speed) + ", Steering " + String(pos) + " , Target yaw " + String(targetYaw));
 
   
   return command;

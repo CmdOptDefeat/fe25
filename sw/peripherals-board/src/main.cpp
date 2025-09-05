@@ -14,7 +14,7 @@
 #define COMPETITION_OBSTACLE_ROUND
 #define VEHICLE_DRIVERSET_HWREV2                        // HWREV2 **NOTE** HWREV1 DRIVERS ARE INCOMPLETE, BUGGY, OR MISSING!!
 #define VEHICLE_SW_STATUS "Competition Compile"         // String containing status of software. Printed over debug port
-#define VEHICLE_SW_NAME "Unparking Compile"            // String containing name of software. Printed over debug port
+#define VEHICLE_SW_NAME "Open Round Compile"            // String containing name of software. Printed over debug port
 
 #include <driverconfig.hpp>                             // **NOTE** All config #defines must be before this include
 #include <SensorManager.hpp>
@@ -69,6 +69,7 @@ void coreOpenRound();
 void coreRunStateMachine();
 void coreCheckSafeButton();
 void coreSetLEDColor(CoreControlState state);
+String coreGetStringFromState(CoreControlState state);
 
 
 void debugPrintVehicleData(VehicleData data, VehicleCommand cmd);
@@ -169,6 +170,8 @@ void setup(){
   serialCommunication.init(&debugLogger);
 
   coreControlState = WAIT_FOR_BUTTON;
+
+  debugLogger.sendMessage("setup()", debugLogger.INFO, "Setup complete");
 
 }
 
@@ -416,9 +419,11 @@ void coreWaitForButton(){
   #if defined(VEHICLE_CONFIGURATION_OPEN_ROUND)
     debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OPEN_ROUND defined.");
     coreControlState = OPEN_ROUND;
+    debugLogger.sendMessage("coreWaitForButton()", debugLogger.INFO, "Button press detected. Setting coreControlState to OPEN_ROUND");
   #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)
     debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING defined.");
     coreControlState = GET_ORIENTATION;
+    debugLogger.sendMessage("coreWaitForButton()", debugLogger.INFO, "Button press detected. Setting coreControlState to GET_ORIENTATION");
   #else
     #error "VEHICLE_CONFIGURATION_OPEN_ROUND, VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING, or VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING must be defined!"
   #endif
@@ -587,6 +592,8 @@ void coreRunStateMachine(){
 
   coreSetLEDColor(coreControlState);
 
+  debugLogger.sendMessage("coreRunStateMachine", debugLogger.INFO, "Core control state is " + coreGetStringFromState(coreControlState));
+
 }
 
 void coreSetLEDColor(CoreControlState state){
@@ -631,6 +638,42 @@ void coreCheckSafeButton(){
 
   if(!digitalRead(VEHICLE_GET_CONFIG.pinConfig.lidarMotorPWM)){
     coreControlState = SAFE;
+  }
+
+}
+
+String coreGetStringFromState(CoreControlState state){
+
+  switch(state){
+
+    case WAIT_FOR_BUTTON:
+      return "WAIT_FOR_BUTTON";
+      break;
+
+    case GET_ORIENTATION:
+      return "GET_ORIENTATION";
+      break;
+
+    case DRIVE_FROM_PI:
+      return "DRIVE_FROM_PI";
+      break;
+
+    case OPEN_ROUND:
+      return "OPEN_ROUND";
+      break;
+
+    case PARK:
+      return "PARK";
+      break;
+
+    case UNPARK:
+      return "UNPARK";
+      break;
+
+    case SAFE:
+      return "SAFE";
+      break;
+
   }
 
 }
