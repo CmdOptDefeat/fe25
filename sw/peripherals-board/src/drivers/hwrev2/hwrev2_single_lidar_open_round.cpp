@@ -26,7 +26,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
 
   // Getting basic data
   yaw = vehicleData.orientation.x;
-  distance = - vehicleData.encoderPosition / 43;    // Negative for Pranav's version of robot
+  distance = - (vehicleData.encoderPosition - prev_encoders) / 43;    // Negative for Pranav's version of robot
   // Get data from LiDARs
   front_lidarDist = vehicleData.lidar[0];
   left_lidarDist = vehicleData.lidar[270];
@@ -56,6 +56,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
         turning = false;
         encoderValue = 0;
         distance = 0;
+        prev_encoders = vehicleData.encoderPosition;
         turns += 1;
         pos = 90; // Reset servo position
         command.targetYaw = pos;
@@ -79,11 +80,11 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   }
 
   // Checking to turn, not turning anyways.
-  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns != 0 && distance > 100))){
+  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns >= 2 && distance > 100)) || (turns == 1 && distance > 50)){
     turning = true;
     targetYaw = ((turnDir * (turns + 1) * 90) + 360) % 360;
     if (turnDir == -1) targetYaw += turns * 0.95f;
-    else if (turnDir == 1) targetYaw -= turns * 1.05f;
+    else if (turnDir == 1) targetYaw -= turns * 0.95f;
     if (turnDir == 1) pos = 90 + 80; // Set servo position for turning
     else if (turnDir == -1) pos = 90 - 84;
 
@@ -131,8 +132,10 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
 
   } 
 
+
+
   // Check is 3 rounds are completed
-  if (turns == 12 && front_lidarDist > 120 && front_lidarDist < 175 && distance > 25){
+  if (turns == 12 && front_lidarDist > 130 && front_lidarDist < 175 && distance > 25){
     completed = true;
     speed = 0; // Stop the vehicle
     pos = 90; // Reset servo position
