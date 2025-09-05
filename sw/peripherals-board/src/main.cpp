@@ -169,7 +169,7 @@ void setup(){
   remoteCommunication.init(&debugLogger);
   serialCommunication.init(&debugLogger);
 
-  coreControlState = OPEN_ROUND;
+  coreControlState = WAIT_FOR_BUTTON;
 
   debugLogger.sendMessage("setup()", debugLogger.INFO, "Setup complete");
 

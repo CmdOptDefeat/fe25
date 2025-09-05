@@ -12,11 +12,9 @@ hw_rev_2_SingleLidarOpenRound::hw_rev_2_SingleLidarOpenRound(VehicleConfig cfg){
 
 void hw_rev_2_SingleLidarOpenRound::init(ILogger* logger) {
 
-  delay(1500);
   _debugLogger = logger;
   _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::init()", _debugLogger->INFO, "Initialising drive algorithm");
   VehicleCommand{.targetSpeed = 0, .targetYaw = 90}; // Set initial speed, steering  
-  delay(1000);
 
 }
 
