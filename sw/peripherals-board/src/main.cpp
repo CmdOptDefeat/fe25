@@ -419,10 +419,12 @@ void coreWaitForButton(){
   #if defined(VEHICLE_CONFIGURATION_OPEN_ROUND)
     debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OPEN_ROUND defined.");
     coreControlState = OPEN_ROUND;
+    delay(1000);
     debugLogger.sendMessage("coreWaitForButton()", debugLogger.INFO, "Button press detected. Setting coreControlState to OPEN_ROUND");
   #elif defined(VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING)
     debugLogger.sendMessage("coreUpdateButton", debugLogger.INFO, "VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING defined.");
     coreControlState = GET_ORIENTATION;
+    delay(1000);
     debugLogger.sendMessage("coreWaitForButton()", debugLogger.INFO, "Button press detected. Setting coreControlState to GET_ORIENTATION");
   #else
     #error "VEHICLE_CONFIGURATION_OPEN_ROUND, VEHICLE_CONFIGURATION_OBSTACLE_ROUND_NO_UNPARKING, or VEHICLE_CONFIGURATION_OBSTACLE_ROUND_UNPARKING must be defined!"
