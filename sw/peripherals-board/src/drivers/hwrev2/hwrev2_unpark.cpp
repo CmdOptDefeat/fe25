@@ -104,7 +104,7 @@ void hw_rev_2_UnparkAlgorithm::_turn1(){
 
   }
 
-  _cmd.targetSpeed = _absTurnSpeed;
+  _cmd.targetSpeed = 200;
   _cmd.targetYaw = _data.roundDirectionCW ? MAX_RIGHT_TURN : MAX_LEFT_TURN;
 
 }
