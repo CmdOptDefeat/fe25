@@ -78,7 +78,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   }
 
   // Checking to turn, not turning anyways.
-  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns >= 2 && distance > 85)) || (turns == 1 && distance > 75)){
+  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns >= 2 && distance > 80)) || (turns == 1 && distance > 70)){
     turning = true;
     targetYaw = ((turnDir * (turns + 1) * 90) + 360) % 360;
     if (turnDir == -1) targetYaw += turns * 0.95f;
