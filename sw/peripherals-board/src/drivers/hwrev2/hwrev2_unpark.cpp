@@ -10,6 +10,8 @@ void hw_rev_2_UnparkAlgorithm::init(ILogger *logger)
 {
 
   _logger = logger;
+  _state = STRAIGHT0;
+
 }
 
 VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data)
@@ -20,24 +22,20 @@ VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data)
   switch (_state)
   {
 
+  case STRAIGHT0:
+    _straight0();
+    break;
+
   case TURN0:
     _turn0();
     break;
 
-  case TURN1:
+    case TURN1:
     _turn1();
     break;
 
-  case TURN2:
-    _turn2();
-    break;
-
-  case TURN3:
-    _turn3();
-    break;
-
-  case TURN4:
-    _turn4();
+  case STOP:
+    _stop();
     break;
 
   default:
@@ -47,10 +45,25 @@ VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data)
   return _cmd;
 }
 
-/*
+void hw_rev_2_UnparkAlgorithm::_straight0(){
+
+  if(_data.lidar[0] <= 6){
+
+    _cmd.targetSpeed = 0;
+    _cmd.targetYaw = 90;
+    _state = TURN0;
+    return;
+
+  }
+
+  _cmd.targetSpeed = _absBaseSpeed;
+  _cmd.targetYaw = 90;
+
+}
+
 void hw_rev_2_UnparkAlgorithm::_turn0(){
 
-  if(_data.lidar[180] <= 2){
+  if(_data.lidar[180] <= 6){
 
     _cmd.targetSpeed = 0;
     _cmd.targetYaw = 90;
@@ -59,135 +72,46 @@ void hw_rev_2_UnparkAlgorithm::_turn0(){
 
   }
 
-  _cmd.targetYaw = 90;
   _cmd.targetSpeed = -_absTurnSpeed;
+  _cmd.targetYaw = _data.roundDirectionCW ? MAX_LEFT_TURN : MAX_RIGHT_TURN;
 
 }
 
 void hw_rev_2_UnparkAlgorithm::_turn1(){
 
-  if(_data.lidar[0] <= 2){
+  if(_data.roundDirectionCW){
 
-    _cmd.targetSpeed = 0;
-    _cmd.targetYaw = 90;
-    _state = TURN2;
-    return;
+     if(_data.orientation.x >= 90){
+
+      _cmd.targetSpeed = 0;
+      _cmd.targetYaw = 90;
+      _state = STOP;
+      return;
+
+     }
+
+  }
+  else{
+
+     if(_data.orientation.x <= 270){
+
+      _cmd.targetSpeed = 0;
+      _cmd.targetYaw = 90;
+      _state = STOP;
+      return;
+
+     }
 
   }
 
-  _cmd.targetYaw = _data.roundDirectionCW ? MAX_RIGHT_TURN : MAX_LEFT_TURN;
   _cmd.targetSpeed = _absTurnSpeed;
-
-}
-
-void hw_rev_2_UnparkAlgorithm::_turn2(){
-
-  if(_data.lidar[180] <= 3){
-
-    _cmd.targetSpeed = 0;
-    _cmd.targetYaw = 90;
-    _state = TURN3;
-    return;
-
-  }
-
-  _cmd.targetYaw = _data.roundDirectionCW ? MAX_LEFT_TURN : MAX_RIGHT_TURN;
-  _cmd.targetSpeed = -_absTurnSpeed;
-
-}
-
-void hw_rev_2_UnparkAlgorithm::_turn3(){
-
-  if(_data.lidar[0] <= 3){
-    _cmd.targetSpeed = 0;
-    _state = TURN4;
-    return;
-  }
-
   _cmd.targetYaw = _data.roundDirectionCW ? MAX_RIGHT_TURN : MAX_LEFT_TURN;
-  _cmd.targetSpeed = _absTurnSpeed;
 
 }
 
-void hw_rev_2_UnparkAlgorithm::_turn4(){
+void hw_rev_2_UnparkAlgorithm::_stop(){
 
-  if(_data.lidar[180] <= 3){
-
-    _cmd.targetSpeed = 0;
-    _cmd.targetYaw = 90;
-    return;
-
-  }
-
-  _cmd.targetYaw = _data.roundDirectionCW ? MAX_LEFT_TURN : MAX_RIGHT_TURN;
-  _cmd.targetSpeed = -_absTurnSpeed;
-
-}*/
-
-void hw_rev_2_UnparkAlgorithm::_turn0()
-{
-  _cmd.targetSpeed = -90;
-  if (_data.lidar[90] > 20)
-  {
-    _cmd.targetYaw = 5;
-    turn_dir = 1;
-  }
-  else if (_data.lidar[270] > 20)
-  {
-    _cmd.targetYaw = 168;
-    turn_dir = -1;
-  }
-  _state = TURN1;
-  return;
   _cmd.targetSpeed = 0;
-}
-
-void hw_rev_2_UnparkAlgorithm::_turn1()
-{
-  if (_data.lidar[180] < 6)
-  {
-    if (turn_dir == 1)
-      _cmd.targetYaw = 167;
-    else if (turn_dir == -1)
-      _cmd.targetYaw = 5;
-    _cmd.targetSpeed = 100;
-    _state = TURN2;
-    return;
-  }
-
-  _cmd.targetSpeed = -90;
+  _cmd.targetYaw = 90;
 
 }
-
-void hw_rev_2_UnparkAlgorithm::_turn2()
-{
-  float yaw = _data.orientation.x;
-  if (turn_dir == -1 && yaw <= 310 && yaw > 270)
-  {
-    _cmd.targetSpeed = 0;
-    _cmd.targetYaw = 168;
-    _state = TURN3;
-    return;
-  }
-  else if (turn_dir == 1 && yaw > 50 && yaw < 90)
-  {
-    _cmd.targetSpeed = 0;
-    _cmd.targetYaw = 5;
-    _state = TURN3;
-    return;
-  }
-  _cmd.targetSpeed = 100;
-}
-
-void hw_rev_2_UnparkAlgorithm::_turn3()
-{
-  if (_data.lidar[180] <= 4)
-  {
-    _cmd.targetSpeed = 0;
-    _cmd.targetYaw = 90;
-    return;
-  }
-  _cmd.targetSpeed = 0;
-}
-
-void hw_rev_2_UnparkAlgorithm::_turn4() {}

@@ -38,7 +38,7 @@ private:
     int backward = 0;          // How much to go back by
     float back_start = 0;      // Distance when starting to go back
     uint8_t pos = 90;          // variable to store the servo position  
-
+    int prev_encoders = 0;
     // About IMU
     float yaw;
     float targetYaw = 0;

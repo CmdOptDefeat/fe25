@@ -12,11 +12,9 @@ hw_rev_2_SingleLidarOpenRound::hw_rev_2_SingleLidarOpenRound(VehicleConfig cfg){
 
 void hw_rev_2_SingleLidarOpenRound::init(ILogger* logger) {
 
-  delay(1500);
   _debugLogger = logger;
   _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::init()", _debugLogger->INFO, "Initialising drive algorithm");
   VehicleCommand{.targetSpeed = 0, .targetYaw = 90}; // Set initial speed, steering  
-  delay(1000);
 
 }
 
@@ -26,7 +24,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
 
   // Getting basic data
   yaw = vehicleData.orientation.x;
-  distance = - vehicleData.encoderPosition / 43;    // Negative for Pranav's version of robot
+  distance = - (vehicleData.encoderPosition - prev_encoders) / 43;    // Negative for Pranav's version of robot
   // Get data from LiDARs
   front_lidarDist = vehicleData.lidar[0];
   left_lidarDist = vehicleData.lidar[270];
@@ -56,6 +54,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
         turning = false;
         encoderValue = 0;
         distance = 0;
+        prev_encoders = vehicleData.encoderPosition;
         turns += 1;
         pos = 90; // Reset servo position
         command.targetYaw = pos;
@@ -79,24 +78,24 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   }
 
   // Checking to turn, not turning anyways.
-  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns != 0 && distance > 100))){
+  else if (front_lidarDist <= threshold && abs(error) < 15 && ((turns == 0 && (left_lidarDist + right_lidarDist) > 120) || (turns >= 2 && distance > 85)) || (turns == 1 && distance > 75)){
     turning = true;
     targetYaw = ((turnDir * (turns + 1) * 90) + 360) % 360;
     if (turnDir == -1) targetYaw += turns * 0.95f;
-    else if (turnDir == 1) targetYaw -= turns * 1.05f;
+    else if (turnDir == 1) targetYaw -= turns * 0.95f;
     if (turnDir == 1) pos = 90 + 80; // Set servo position for turning
     else if (turnDir == -1) pos = 90 - 84;
 
     if (turns == 0 && front_lidarDist < 70 && (left_lidarDist + right_lidarDist) > 120 && backward == 0){
       // Go back for first turn in case of extended wall
       if (turnDir == -1){
-        if (left_start_dist < 10 && right_start_dist < 45) backward = 11;
-        else backward = 21;
+        if (left_start_dist < 10 && right_start_dist < 45) backward = 9;
+        else backward = 18;
       }
       else if (turnDir == 1){
         if (left_start_dist < 45 && right_start_dist < 10){ 
           //pos = 0;
-          backward = 8;
+          backward = 10;
         }
         else backward = 14;
       }
@@ -131,8 +130,10 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
 
   } 
 
+
+
   // Check is 3 rounds are completed
-  if (turns == 12 && front_lidarDist > 120 && front_lidarDist < 175 && distance > 25){
+  if (turns == 12 && front_lidarDist > 130 && front_lidarDist < 175 && distance > 25){
     completed = true;
     speed = 0; // Stop the vehicle
     pos = 90; // Reset servo position
@@ -163,7 +164,7 @@ VehicleCommand hw_rev_2_SingleLidarOpenRound::drive(VehicleData vehicleData){
   // Ref .hpp file with line 19 - `bool isDirectControl() override { return true; }`
   command.targetYaw = int(pos);
 
-  _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Speed " + String(speed) + "  ;Steering " + String(pos));
+  _debugLogger->sendMessage("hw_rev_2_SingleLidarOpenRound::drive()", _debugLogger->INFO, "Speed " + String(speed) + ", Steering " + String(pos) + " , Target yaw " + String(targetYaw));
 
   
   return command;
