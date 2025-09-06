@@ -47,7 +47,7 @@ VehicleCommand hw_rev_2_UnparkAlgorithm::drive(VehicleData data)
 
 void hw_rev_2_UnparkAlgorithm::_straight0(){
 
-  if(_data.lidar[0] <= 6){
+  if(_data.lidar[0] <= 5/){
 
     _cmd.targetSpeed = 0;
     _cmd.targetYaw = 90;
@@ -63,7 +63,7 @@ void hw_rev_2_UnparkAlgorithm::_straight0(){
 
 void hw_rev_2_UnparkAlgorithm::_turn0(){
 
-  if(_data.lidar[180] <= 6){
+  if(_data.lidar[180] <= 5){
 
     _cmd.targetSpeed = 0;
     _cmd.targetYaw = 90;

@@ -29,7 +29,7 @@ private:
   hw_rev_2_unpark_state _state;
   VehicleData _data;
   VehicleCommand _cmd;
-  const int16_t _absBaseSpeed = 45;
+  const int16_t _absBaseSpeed = 70;
   const int16_t _absTurnSpeed = 80;
   const int16_t MAX_LEFT_TURN = 5;
   const int16_t MAX_RIGHT_TURN = 175;

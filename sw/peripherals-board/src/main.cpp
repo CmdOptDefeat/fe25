@@ -1,6 +1,3 @@
-// TODO: Figure out a clean way of switching between target control sources, ICommunication and IDriveAlgorithm, combine?k
-// Maybe implement radio and serial as drive algorithms, how to pass comm drivers to them?
-
 /**
  * @file main.cpp
  * @brief Initialises drivers and managers, handles interaction between managers
